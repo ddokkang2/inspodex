@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inspodex – Style & Pose Reference Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Inspodex는 디자인·캐릭터·사진·팔레트·포즈 레퍼런스를 빠르게 찾고, Pinterest·Google 이미지로 바로 확장 검색할 수 있는 스타일 디렉토리입니다." />
+    <meta name="keywords" content="Inspodex, design reference, character reference, photo lighting, color palette, pose reference, Pinterest" />
+    <meta name="author" content="ddokkang" />
+    <link rel="canonical" href="https://inspodex.vercel.app/" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+    <meta name="theme-color" content="#0e0f12" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Inspodex – Style & Pose Reference Hub" />
+    <meta property="og:description" content="디자인부터 포즈까지, 140+ 스타일을 탐색하고 바로 외부 검색으로 이어지는 레퍼런스 허브." />
+    <meta property="og:url" content="https://inspodex.vercel.app/" />
+    <meta property="og:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <meta property="og:site_name" content="Inspodex" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Inspodex – Style & Pose Reference Hub" />
+    <meta name="twitter:description" content="디자인·캐릭터·사진·팔레트·포즈 레퍼런스를 빠르게 찾는 스타일 디렉토리." />
+    <meta name="twitter:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <meta name="twitter:creator" content="@ddokkang" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <button id="panelHandle" class="panel-handle" type="button" aria-label="검색 패널 열기" aria-expanded="false">
+      검색 패널
+    </button>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">reference hub</p>
+          <h1 id="directoryTitle">Design Style Directory</h1>
+          <p id="directorySubtitle">스타일을 고르고(필터), 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="pill primary" href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Pinterest 열기</a>
+          <label class="theme-picker" aria-label="컬러 테마 선택">
+            <span class="sr-only">테마</span>
+            <select id="themeSelect" class="pill theme-select">
+              <option value="light">주간 (Light)</option>
+              <option value="dark">야간 (Dark)</option>
+              <option value="nord">Nord</option>
+              <option value="dracula">Dracula</option>
+              <option value="solarized-dark">Solarized Dark</option>
+              <option value="solarized-light">Solarized Light</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <section class="panel controls" aria-label="Search panel">
+        <div class="controls-inner">
+          <div class="search-panel">
+          <section class="search-block" aria-label="Style search">
+            <div class="search-block-head">
+              <div>
+                <div class="search-block-title">스타일 찾기</div>
+                <div class="search-block-subtitle">이 사이트 안에서 카드 목록을 실시간으로 필터링해요.</div>
+              </div>
+              <div class="search-block-actions">
+                <button id="random200Btn" type="button" class="pill">카드섞기</button>
+                <button id="randomClearBtn" type="button" class="pill" hidden>섞기 해제</button>
+              </div>
+            </div>
+
+            <div class="controls-row">
+              <div class="sort-toggle" role="group" aria-label="Directory">
+                <button id="dirDesign" type="button" class="seg active">디자인</button>
+                <button id="dirCharacter" type="button" class="seg">캐릭터</button>
+                <button id="dirPhoto" type="button" class="seg">사진/라이팅</button>
+                <button id="dirPalette" type="button" class="seg">컬러 팔레트</button>
+                <button id="dirPose" type="button" class="seg">포즈/동작</button>
+              </div>
+
+              <label class="grow">
+                스타일 검색
+                <div class="input-wrap">
+                  <input id="styleSearch" placeholder="예: 미니멀, brutal, 스위스, y2k" autocomplete="off" />
+                  <button id="clearSearch" class="input-clear" type="button" aria-label="검색어 지우기" title="지우기 (Esc)">×</button>
+                </div>
+              </label>
+
+              <div class="sort-toggle" role="group" aria-label="Sort">
+                <button id="sortKo" type="button" class="seg active">가나다순</button>
+                <button id="sortEn" type="button" class="seg">ABCD순</button>
+              </div>
+            </div>
+
+            <nav class="jumpbar" aria-label="Quick jump">
+              <div class="jumpbar-row" id="poseTypeJump" hidden></div>
+              <div class="jumpbar-row" id="poseVariantJump" hidden></div>
+              <div class="jumpbar-row" id="enJump"></div>
+            </nav>
+
+            <div class="controls-meta">
+              <span id="resultCount" class="muted" aria-live="polite"></span>
+              <span class="muted">/ = 검색 포커스 · Esc = 지우기</span>
+            </div>
+
+            <div id="activeChips" class="active-chips" aria-label="Active filters"></div>
+            <span id="activeTag" class="sr-only"></span>
+          </section>
+
+          <section class="search-block" aria-label="External search">
+            <div class="search-block-head">
+              <div>
+                <div class="search-block-title">키워드로 외부 검색</div>
+                <div class="search-block-subtitle">사이트를 먼저 선택하고, 카드(키워드)를 고른 다음 검색 버튼을 눌러요.</div>
+              </div>
+            </div>
+
+            <div class="flow-steps" aria-label="Search flow">
+              <span class="flow-step">1 사이트 선택</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">2 카드 클릭 또는 직접 입력</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">3 검색</span>
+            </div>
+
+              <div id="siteSwitchbar" class="site-switchbar" aria-label="Search sites"></div>
+
+              <div class="manual-search" aria-label="Manual site search">
+                <div class="manual-search-row">
+                  <input id="manualSearch" class="manual-search-input" placeholder="카드를 클릭하거나 키워드를 직접 입력하세요" autocomplete="off" />
+                  <button id="manualSearchBtn" type="button" class="manual-search-btn">검색</button>
+                </div>
+                <div id="manualHint" class="manual-hint">카드를 먼저 클릭하면 검색어가 자동으로 채워져요. 아니면 직접 입력 후 검색하세요.</div>
+
+              <div class="chip-block" aria-label="Search expansion options">
+                <div class="chip-block-label">검색 확장</div>
+                <div id="intentChips" class="chip-row" role="group" aria-label="Search expansion chips"></div>
+                <div class="search-block-actions" style="margin-top: 8px;">
+                  <button id="intentResetBtn" type="button" class="pill">기본값 복원</button>
+                </div>
+                <div class="chip-help">확장 칩은 1개만 적용돼요.</div>
+              </div>
+
+              <div id="manualSelected" class="manual-search-selected"></div>
+              <div class="manual-search-help">Enter로도 검색할 수 있어요.</div>
+            </div>
+
+            <div id="poseLinks" class="recommend-links" hidden aria-label="Pose reference links">
+              <div class="recommend-links-head">
+                <div class="recommend-links-title">포즈 전문 추천 링크</div>
+                <div class="recommend-links-sub">검색이 아니라 참고용 사이트로 바로 이동해요.</div>
+              </div>
+              <div class="recommend-links-row" role="list">
+                <a role="listitem" class="pill recommend-link" href="https://www.posemaniacs.com/ko/poses" target="_blank" rel="noreferrer">Posemaniacs</a>
+                <a role="listitem" class="pill recommend-link" href="https://justsketch.me/" target="_blank" rel="noreferrer">JustSketchMe (3D Pose)</a>
+                <a role="listitem" class="pill recommend-link" href="https://posemy.art/" target="_blank" rel="noreferrer">PoseMy.Art (3D Pose)</a>
+                <a role="listitem" class="pill recommend-link" href="https://magicposer.com/" target="_blank" rel="noreferrer">Magic Poser</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.adorkastock.com/" target="_blank" rel="noreferrer">AdorkaStock</a>
+                <a role="listitem" class="pill recommend-link" href="https://croquiscafe.com/" target="_blank" rel="noreferrer">Croquis Cafe</a>
+              </div>
+            </div>
+
+            <div id="characterLinks" class="recommend-links" hidden aria-label="Character reference links">
+              <div class="recommend-links-head">
+                <div class="recommend-links-title">캐릭터 추천 사이트</div>
+                <div class="recommend-links-sub">추가 레퍼런스를 빠르게 탐색할 수 있는 사이트예요.</div>
+              </div>
+              <div class="recommend-links-row" role="list">
+                <a role="listitem" class="pill recommend-link" href="https://www.deviantart.com/" target="_blank" rel="noreferrer">DeviantArt</a>
+                <a role="listitem" class="pill recommend-link" href="https://sketchfab.com/" target="_blank" rel="noreferrer">Sketchfab</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.artstation.com/" target="_blank" rel="noreferrer">ArtStation</a>
+              </div>
+            </div>
+          </section>
+        </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Style thumbnails">
+        <div id="styleGrid" class="style-grid"></div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="popup" class="popup" hidden>
+      <div class="popup-backdrop" data-popup-close="true"></div>
+      <div class="popup-dialog" role="dialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupDesc">
+        <div id="popupTitle" class="popup-title">복사 완료</div>
+        <div id="popupDesc" class="popup-desc">이미지 생성툴에 붙여넣기 → 생성</div>
+        <div class="popup-actions">
+          <button id="popupClose" type="button" class="pill">확인</button>
+        </div>
+      </div>
+    </div>
+    <script src="styles-data.js"></script>
+    <script src="characters-data.js"></script>
+    <script src="photo-data.js"></script>
+    <script src="palettes-data.js"></script>
+    <script src="poses-data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="hsl(60 75% 55%)"/>
+      <stop offset="1" stop-color="hsl(120 75% 52%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" rx="28" fill="url(#g)"/>
+  <circle cx="470" cy="110" r="92" fill="rgba(255,255,255,0.20)"/>
+  <circle cx="130" cy="330" r="120" fill="rgba(0,0,0,0.14)"/>
+  <rect x="28" y="270" width="544" height="152" rx="22" fill="rgba(0,0,0,0.36)"/>
+  <text x="56" y="325" fill="#fff" font-size="34" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800">포스트모더니즘</text>
+  <text x="56" y="365" fill="rgba(255,255,255,0.9)" font-size="18" font-family="system-ui, -apple-system, Segoe UI, sans-serif">Postmodernism</text>
+</svg>

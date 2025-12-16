@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0d12"/>
+      <stop offset="100%" stop-color="#1d2140"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6b70ff"/>
+      <stop offset="100%" stop-color="#88c0d0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity="0.35">
+    <circle cx="240" cy="140" r="220" fill="#88c0d0"/>
+    <circle cx="960" cy="520" r="260" fill="#6b70ff"/>
+  </g>
+  <text x="100" y="220" fill="#f5f5f7" font-family="Poppins, 'Noto Sans KR', sans-serif" font-size="68" font-weight="700">Inspodex</text>
+  <text x="100" y="300" fill="#cfd4ff" font-family="Poppins, 'Noto Sans KR', sans-serif" font-size="34" font-weight="500">Where creators find design, character, photo, palette, and pose references faster.</text>
+  <rect x="100" y="360" width="360" height="8" rx="4" fill="url(#accent)"/>
+  <text x="100" y="430" fill="#ffffff" opacity="0.9" font-family="Poppins, 'Noto Sans KR', sans-serif" font-size="28">
+    <tspan>140+ curated styles • instant filters • Pinterest / Google hand-off • search builder</tspan>
+  </text>
+</svg>
