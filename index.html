@@ -72,8 +72,16 @@
               </div>
             </div>
 
+            <div class="flow-steps" id="styleFlowSteps" aria-label="Style flow">
+              <span class="flow-step" data-step="1">1 디렉토리</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step" data-step="2">2 검색/필터</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step" data-step="3">3 카드 클릭</span>
+            </div>
+
             <div class="controls-row">
-              <div class="sort-toggle" role="group" aria-label="Directory">
+              <div class="sort-toggle" role="group" aria-label="Directory" data-style-guide="dir">
                 <button id="dirDesign" type="button" class="seg active">디자인</button>
                 <button id="dirCharacter" type="button" class="seg">캐릭터</button>
                 <button id="dirPhoto" type="button" class="seg">사진/라이팅</button>
@@ -83,7 +91,7 @@
 
               <label class="grow">
                 스타일 검색
-                <div class="input-wrap">
+                <div class="input-wrap" data-style-guide="filter">
                   <input id="styleSearch" placeholder="예: 미니멀, brutal, 스위스, y2k" autocomplete="off" />
                   <button id="clearSearch" class="input-clear" type="button" aria-label="검색어 지우기" title="지우기 (Esc)">×</button>
                 </div>
@@ -95,9 +103,11 @@
               </div>
             </div>
 
-            <nav class="jumpbar" aria-label="Quick jump">
+            <nav class="jumpbar" aria-label="Quick jump" data-style-guide="filter">
               <div class="jumpbar-row" id="poseTypeJump" hidden></div>
               <div class="jumpbar-row" id="poseVariantJump" hidden></div>
+              <div class="jumpbar-row" id="paletteCategoryJump" hidden></div>
+              <div class="jumpbar-row" id="palettePresetJump" hidden></div>
               <div class="jumpbar-row" id="enJump"></div>
             </nav>
 
@@ -118,30 +128,36 @@
               </div>
             </div>
 
-            <div class="flow-steps" aria-label="Search flow">
-              <span class="flow-step">1 사이트 선택</span>
+            <div class="flow-steps" id="flowSteps" aria-label="Search flow">
+              <span class="flow-step" data-step="1">1 사이트 선택</span>
               <span class="flow-arrow">→</span>
-              <span class="flow-step">2 카드 클릭 또는 직접 입력</span>
+              <span class="flow-step" data-step="2">2 카드 클릭 또는 직접 입력</span>
               <span class="flow-arrow">→</span>
-              <span class="flow-step">3 검색</span>
+              <span class="flow-step" data-step="3">3 검색</span>
             </div>
 
-              <div id="siteSwitchbar" class="site-switchbar" aria-label="Search sites"></div>
+              <div id="siteSwitchbar" class="site-switchbar" aria-label="Search sites" data-guide="site"></div>
 
               <div class="manual-search" aria-label="Manual site search">
                 <div class="manual-search-row">
-                  <input id="manualSearch" class="manual-search-input" placeholder="카드를 클릭하거나 키워드를 직접 입력하세요" autocomplete="off" />
-                  <button id="manualSearchBtn" type="button" class="manual-search-btn">검색</button>
+                  <input id="manualSearch" class="manual-search-input" placeholder="카드를 클릭하거나 키워드를 직접 입력하세요" autocomplete="off" data-guide="input" />
+                  <button id="manualSearchBtn" type="button" class="manual-search-btn" data-guide="go">검색</button>
                 </div>
                 <div id="manualHint" class="manual-hint">카드를 먼저 클릭하면 검색어가 자동으로 채워져요. 아니면 직접 입력 후 검색하세요.</div>
 
-              <div class="chip-block" aria-label="Search expansion options">
+              <div class="chip-block" aria-label="Search expansion options" data-guide="expand">
                 <div class="chip-block-label">검색 확장</div>
                 <div id="intentChips" class="chip-row" role="group" aria-label="Search expansion chips"></div>
                 <div class="search-block-actions" style="margin-top: 8px;">
                   <button id="intentResetBtn" type="button" class="pill">기본값 복원</button>
                 </div>
                 <div class="chip-help">확장 칩은 1개만 적용돼요.</div>
+              </div>
+
+              <div id="promptPresetBlock" class="chip-block" aria-label="Image prompt presets" hidden>
+                <div class="chip-block-label">프롬프트 프리셋</div>
+                <div id="promptPresetChips" class="chip-row" role="group" aria-label="Prompt preset chips"></div>
+                <div class="chip-help">팔레트 카드의 “프롬프트 복사”에 적용돼요.</div>
               </div>
 
               <div id="manualSelected" class="manual-search-selected"></div>
@@ -160,6 +176,21 @@
                 <a role="listitem" class="pill recommend-link" href="https://magicposer.com/" target="_blank" rel="noreferrer">Magic Poser</a>
                 <a role="listitem" class="pill recommend-link" href="https://www.adorkastock.com/" target="_blank" rel="noreferrer">AdorkaStock</a>
                 <a role="listitem" class="pill recommend-link" href="https://croquiscafe.com/" target="_blank" rel="noreferrer">Croquis Cafe</a>
+              </div>
+            </div>
+
+            <div id="paletteLinks" class="recommend-links" hidden aria-label="Color palette links">
+              <div class="recommend-links-head">
+                <div class="recommend-links-title">컬러 추천 링크</div>
+                <div class="recommend-links-sub">팔레트 만들기/탐색에 유용한 사이트예요.</div>
+              </div>
+              <div class="recommend-links-row" role="list">
+                <a role="listitem" class="pill recommend-link" href="https://coolors.co/" target="_blank" rel="noreferrer">Coolors</a>
+                <a role="listitem" class="pill recommend-link" href="https://color.adobe.com/" target="_blank" rel="noreferrer">Adobe Color</a>
+                <a role="listitem" class="pill recommend-link" href="https://colorhunt.co/" target="_blank" rel="noreferrer">Color Hunt</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.happyhues.co/" target="_blank" rel="noreferrer">Happy Hues</a>
+                <a role="listitem" class="pill recommend-link" href="https://uigradients.com/" target="_blank" rel="noreferrer">UI Gradients</a>
+                <a role="listitem" class="pill recommend-link" href="https://paletton.com/" target="_blank" rel="noreferrer">Paletton</a>
               </div>
             </div>
 

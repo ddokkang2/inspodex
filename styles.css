@@ -617,6 +617,11 @@ button:focus-visible, a:focus-visible {
   font-size: 12px;
   box-shadow: var(--shadow-elev);
 }
+.flow-step.active {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent));
+  color: var(--btn-primary-text);
+}
 .flow-step:nth-child(1) {
   border-color: color-mix(in srgb, var(--accent) 42%, transparent);
 }
@@ -633,6 +638,27 @@ button:focus-visible, a:focus-visible {
 .manual-hint[data-tone="warn"] {
   color: color-mix(in srgb, var(--accent) 75%, var(--text));
   font-weight: 700;
+}
+
+.guide-focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow-elev);
+  border-radius: 16px;
+  animation: guidePulse 1.6s ease-in-out infinite;
+}
+@keyframes guidePulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.05); }
+}
+
+.guide-soft {
+  outline: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-focus { animation: none; }
 }
 
 .manual-search-selected {

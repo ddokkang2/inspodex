@@ -101,6 +101,8 @@
     activeChips: document.getElementById('activeChips'),
     poseTypeJump: document.getElementById('poseTypeJump'),
     poseVariantJump: document.getElementById('poseVariantJump'),
+    paletteCategoryJump: document.getElementById('paletteCategoryJump'),
+    palettePresetJump: document.getElementById('palettePresetJump'),
     enJump: document.getElementById('enJump'),
     themeSelect: document.getElementById('themeSelect'),
     dirDesign: document.getElementById('dirDesign'),
@@ -112,6 +114,7 @@
     directorySubtitle: document.getElementById('directorySubtitle'),
     siteSwitchbar: document.getElementById('siteSwitchbar'),
     poseLinks: document.getElementById('poseLinks'),
+    paletteLinks: document.getElementById('paletteLinks'),
     characterLinks: document.getElementById('characterLinks'),
     manualSearch: document.getElementById('manualSearch'),
     manualSearchBtn: document.getElementById('manualSearchBtn'),
@@ -121,6 +124,8 @@
     randomClearBtn: document.getElementById('randomClearBtn'),
     intentChips: document.getElementById('intentChips'),
     intentResetBtn: document.getElementById('intentResetBtn'),
+    promptPresetBlock: document.getElementById('promptPresetBlock'),
+    promptPresetChips: document.getElementById('promptPresetChips'),
     toast: document.getElementById('toast'),
     popup: document.getElementById('popup'),
     popupTitle: document.getElementById('popupTitle'),
@@ -131,6 +136,7 @@
   const controlsPanel = document.querySelector('.panel.controls');
   const panelHandle = document.getElementById('panelHandle');
   let panelPinned = false;
+  let siteTouched = false;
 
   function setManualHint(message, { tone = 'info' } = {}) {
     if (!dom.manualHint) return;
@@ -143,9 +149,81 @@
     const hasText = Boolean(String(dom.manualSearch?.value || '').trim());
     if (hasCard || hasText) {
       setManualHint('카드 클릭 → 자동 입력 · 직접 수정 가능', { tone: 'info' });
+      if (dom.manualSearchBtn) dom.manualSearchBtn.disabled = false;
       return;
     }
     setManualHint('카드를 꼭 클릭하거나, 키워드를 직접 입력한 뒤 검색하세요.', { tone: 'warn' });
+    if (dom.manualSearchBtn) dom.manualSearchBtn.disabled = true;
+  }
+
+  function clearGuideFocus() {
+    document.querySelectorAll('.guide-focus').forEach((el) => el.classList.remove('guide-focus'));
+  }
+
+  function setGuideStep(step) {
+    const s = Number(step) || 1;
+    const flow = document.getElementById('flowSteps');
+    if (flow) {
+      flow.querySelectorAll('.flow-step[data-step]').forEach((el) => {
+        el.classList.toggle('active', Number(el.dataset.step) === s);
+      });
+    }
+    clearGuideFocus();
+    const focus = (sel) => {
+      const el = document.querySelector(sel);
+      if (el) el.classList.add('guide-focus');
+    };
+    if (s === 1) focus('[data-guide="site"]');
+    if (s === 2) {
+      focus('[data-guide="input"]');
+      focus('#styleGrid');
+    }
+    if (s === 3) {
+      focus('[data-guide="go"]');
+      if (!selectedIntentKey) focus('[data-guide="expand"]');
+    }
+  }
+
+  function updateGuideStep() {
+    const hasText = Boolean(String(dom.manualSearch?.value || '').trim());
+    if (hasText) return setGuideStep(3);
+    if (!siteTouched) return setGuideStep(1);
+    return setGuideStep(2);
+  }
+
+  function clearStyleGuideSoft() {
+    document.querySelectorAll('.guide-soft').forEach((el) => el.classList.remove('guide-soft'));
+  }
+
+  function setStyleGuideStep(step) {
+    const s = Number(step) || 1;
+    const flow = document.getElementById('styleFlowSteps');
+    if (flow) {
+      flow.querySelectorAll('.flow-step[data-step]').forEach((el) => {
+        el.classList.toggle('active', Number(el.dataset.step) === s);
+      });
+    }
+    clearStyleGuideSoft();
+    const focusAll = (sel) => {
+      document.querySelectorAll(sel).forEach((el) => el.classList.add('guide-soft'));
+    };
+    if (s === 1) focusAll('[data-style-guide="dir"]');
+    if (s === 2) focusAll('[data-style-guide="filter"]');
+    if (s === 3) focusAll('#styleGrid');
+  }
+
+  function updateStyleGuideStep() {
+    const hasQuery = Boolean(String(query || '').trim());
+    const shuffled = Boolean(shuffleState && shuffleState.directory === directoryMode);
+    const hasFilters = (directoryMode === 'pose')
+      ? Boolean(hasQuery || activeTag || activePoseType || activePoseVariant || shuffled)
+      : (directoryMode === 'palette')
+        ? Boolean(hasQuery || activeTag || activePaletteCategory || activePalettePreset || shuffled)
+        : Boolean(hasQuery || activeTag || activeEnInitial || activeDigitInitial || shuffled);
+
+    if (selectedStyleId) return setStyleGuideStep(3);
+    if (hasFilters) return setStyleGuideStep(2);
+    return setStyleGuideStep(1);
   }
 
   function setPanelOpen(open, { pin = false } = {}) {
@@ -175,6 +253,8 @@
   let activeDigitInitial = '';
   let activePoseType = '';
   let activePoseVariant = '';
+  let activePaletteCategory = '';
+  let activePalettePreset = '';
   let directoryMode = 'design';
   let activeSiteKey = 'pinterest';
   let selectedStyleId = '';
@@ -190,6 +270,7 @@
   const MANUAL_BASE_Q_KEY_PREFIX = 'reference-hub-manualbaseq:';
   const SHUFFLE_KEY = 'reference-hub-shuffle';
   const INTENT_KEY_PREFIX = 'reference-hub-intent:';
+  const PROMPT_PRESET_KEY_PREFIX = 'reference-hub-promptpreset:';
 
   const THEMES = [
     'light',
@@ -277,7 +358,7 @@
   }
 
   function sitesForDirectory(mode) {
-    if (mode === 'palette') return ['pinterest', 'googleImages', 'coolors', 'adobeColor'];
+    if (mode === 'palette') return ['pinterest', 'googleImages'];
     if (mode === 'photo') return ['pinterest', 'googleImages'];
     if (mode === 'character') return ['pinterest', 'googleImages', 'behance', 'dribbble'];
     if (mode === 'pose') return ['pinterest', 'googleImages'];
@@ -331,6 +412,42 @@
     } catch { /* ignore */ }
   }
 
+  function promptPresetStorageKey() {
+    return `${PROMPT_PRESET_KEY_PREFIX}${directoryMode}`;
+  }
+  function loadPromptPresetKey() {
+    try {
+      return String(localStorage.getItem(promptPresetStorageKey()) || '').trim();
+    } catch {
+      return '';
+    }
+  }
+  function savePromptPresetKey(value) {
+    try {
+      localStorage.setItem(promptPresetStorageKey(), String(value ?? ''));
+    } catch { /* ignore */ }
+  }
+
+  function promptPresetsForDirectory(mode) {
+    if (mode === 'palette') {
+      return [
+        { key: 'ui', label: 'UI Theme', token: 'Design a modern app UI theme preview: color swatches, buttons, inputs, cards, and a small dashboard screen.' },
+        { key: 'brand', label: 'Brand', token: 'Create a brand identity moodboard: logo space, typography samples, packaging mock layout, and color swatches.' },
+        { key: 'poster', label: 'Poster', token: 'Create a bold graphic poster composition with strong color blocking and typographic hierarchy.' },
+        { key: 'interior', label: 'Interior', token: 'Create an interior design moodboard: materials, textures, lighting, and color swatches.' },
+        { key: 'cinematic', label: 'Cinematic', token: 'Create a cinematic still color grade reference with film-like lighting and atmosphere.' },
+        { key: 'product', label: 'Product', token: 'Create a product photography scene with clean studio lighting and a cohesive background.' },
+        { key: 'editorial', label: 'Editorial', token: 'Create an editorial magazine spread layout with photography area and color accents.' },
+        { key: 'illustration', label: 'Illustration', token: 'Create a character-friendly illustration key art with clear shapes and readable contrast.' },
+        { key: 'packaging', label: 'Packaging', token: 'Create a packaging design board: labels, boxes, stickers, and color swatches.' },
+        { key: 'web', label: 'Landing', token: 'Create a landing page hero section concept with UI components and a clear CTA.' },
+        { key: 'gradient', label: 'Gradient', token: 'Create smooth gradient studies and color ramps with abstract shapes.' },
+        { key: 'swatch', label: 'Swatches', token: 'Create a clean color swatch sheet with hex labels and simple layout.' }
+      ];
+    }
+    return [];
+  }
+
   function intentsForDirectory(mode) {
     if (mode === 'design') {
       return [
@@ -366,7 +483,10 @@
       return [
         { key: 'branding', label: '브랜드 팔레트', token: 'brand identity color palette' },
         { key: 'ui', label: 'UI 팔레트', token: 'ui color palette system' },
+        { key: 'swatches', label: '스와치/HEX', token: 'swatches hex codes' },
         { key: 'accessible', label: '접근성/대비', token: 'accessible color palette contrast' },
+        { key: 'cinematic', label: '시네마틱', token: 'cinematic color palette film still' },
+        { key: 'interior', label: '인테리어', token: 'interior color palette materials' },
         { key: 'pastel', label: '파스텔', token: 'pastel color palette' },
         { key: 'muted', label: '뮤트', token: 'muted color palette' },
         { key: 'mono', label: '모노/단색', token: 'monochrome color palette' }
@@ -406,6 +526,33 @@
       out = out.replace(re, ' ');
     });
     return out.replace(/\s+/g, ' ').trim();
+  }
+
+  function renderPromptPresetChips() {
+    if (!dom.promptPresetBlock || !dom.promptPresetChips) return;
+    const presets = promptPresetsForDirectory(directoryMode);
+    const visible = directoryMode === 'palette' && presets.length > 0;
+    dom.promptPresetBlock.hidden = !visible;
+    if (!visible) {
+      dom.promptPresetChips.innerHTML = '';
+      return;
+    }
+
+    const selected = loadPromptPresetKey();
+    dom.promptPresetChips.innerHTML = '';
+
+    presets.forEach((p) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `chip ${selected === p.key ? 'active' : ''}`.trim();
+      b.textContent = p.label;
+      b.addEventListener('click', () => {
+        const next = (loadPromptPresetKey() === p.key) ? '' : p.key;
+        savePromptPresetKey(next);
+        renderPromptPresetChips();
+      });
+      dom.promptPresetChips.appendChild(b);
+    });
   }
 
   function getManualBaseFromUI() {
@@ -537,6 +684,8 @@
     saveManualQuery(q);
     updateSelectedLabelSafe(style);
     refreshManualHint();
+    updateGuideStep();
+    updateStyleGuideStep();
 
     openPanel({ pin: true });
   }
@@ -560,6 +709,7 @@
       '예: 미니멀, brutal, 스위스, y2k';
 
     renderSiteSwitches();
+    updateGuideStep();
   }
 
   function renderSiteSwitches() {
@@ -576,20 +726,26 @@
       b.textContent = meta.label;
       b.dataset.siteKey = k;
       b.addEventListener('click', () => {
+        siteTouched = true;
         applySite(k);
       });
       dom.siteSwitchbar.appendChild(b);
     });
     if (dom.poseLinks) dom.poseLinks.hidden = directoryMode !== 'pose';
+    if (dom.paletteLinks) dom.paletteLinks.hidden = directoryMode !== 'palette';
     if (dom.characterLinks) dom.characterLinks.hidden = directoryMode !== 'character';
+    updateGuideStep();
   }
   function applyDirectory(next) {
     directoryMode = (next === 'character' || next === 'photo' || next === 'palette' || next === 'pose') ? next : 'design';
     localStorage.setItem(DIRECTORY_KEY, directoryMode);
+    siteTouched = false;
 
     if (directoryMode === 'pose') {
       activeEnInitial = '';
       activeDigitInitial = '';
+      activePaletteCategory = '';
+      activePalettePreset = '';
     } else {
       activePoseType = '';
       activePoseVariant = '';
@@ -600,6 +756,25 @@
       if (dom.poseVariantJump) {
         dom.poseVariantJump.hidden = true;
         dom.poseVariantJump.innerHTML = '';
+      }
+    }
+
+    if (directoryMode === 'palette') {
+      // palette: no A-Z/숫자 점프, category/preset 탐색
+      activeEnInitial = '';
+      activeDigitInitial = '';
+      activePaletteCategory = '';
+      activePalettePreset = '';
+    } else {
+      activePaletteCategory = '';
+      activePalettePreset = '';
+      if (dom.paletteCategoryJump) {
+        dom.paletteCategoryJump.hidden = true;
+        dom.paletteCategoryJump.innerHTML = '';
+      }
+      if (dom.palettePresetJump) {
+        dom.palettePresetJump.hidden = true;
+        dom.palettePresetJump.innerHTML = '';
       }
     }
 
@@ -633,6 +808,7 @@
     clearShuffle({ persist: true });
     selectedIntentKey = loadIntentKey();
     renderIntentChips();
+    renderPromptPresetChips();
 
     if (dom.manualSearch) {
       dom.manualSearch.value = '';
@@ -640,6 +816,8 @@
       saveManualBaseQuery('');
     }
     refreshManualHint();
+    updateGuideStep();
+    updateStyleGuideStep();
   }
 
   function thumbsBase() {
@@ -889,7 +1067,31 @@
         return `Signature photograph capturing the ${title} look${withTags}. Lighting direction, shadow character, lens feel, and color grading that clearly communicates ${title}.`;
       }
       if (directoryMode === 'palette') {
-        return `Signature abstract poster expressing the ${title} color palette${withTags}. Strong color blocking, clear mood, and a palette identity that reads instantly as ${title}.`;
+        const hex = (Array.isArray(style?.colors) ? style.colors : [])
+          .map((c) => ascii(String(c || '').toUpperCase()))
+          .filter(Boolean)
+          .slice(0, 5)
+          .join(' ');
+        const hexLine = hex ? ` Use these exact colors: ${hex}.` : '';
+        const cat = paletteCategoryKey(style);
+        const catContext = (() => {
+          if (cat === 'film') return 'Cinematic lighting, subtle film-like color grading, and a clear moodboard presentation.';
+          if (cat === 'era') return 'Era-accurate styling, graphic motifs, and a palette that feels true to the time period.';
+          if (cat === 'mood') return 'Strong emotional mood, readable contrast, and a cohesive visual identity.';
+          if (cat === 'brand') return 'Brand identity board style with clear primary/secondary/accent roles and consistent tone.';
+          if (cat === 'material') return 'Material-forward look with texture cues, finish highlights, and believable surface colors.';
+          if (cat === 'lighting') return 'Photography-inspired light/shadow behavior and a believable color cast.';
+          if (cat === 'season') return 'Seasonal atmosphere, natural color cues, and a cohesive palette story.';
+          if (cat === 'place') return 'Place-inspired moodboard with cultural color cues and environmental context.';
+          if (cat === 'use') return 'Practical design use: accessible contrast, UI/print readiness, and clear accent usage.';
+          if (cat === 'theory') return 'Color harmony focus with clean relationships and easy-to-read swatches.';
+          return '';
+        })();
+        const catLine = catContext ? ` ${catContext}` : '';
+        const presetKey = loadPromptPresetKey();
+        const presetMeta = promptPresetsForDirectory('palette').find((p) => p.key === presetKey);
+        const presetLine = presetMeta?.token ? ` ${presetMeta.token}` : '';
+        return `Signature image showcasing the ${title} color palette${withTags}.${hexLine}${catLine}${presetLine}`.trim();
       }
       if (directoryMode === 'pose') {
         return `Signature pose reference image of ${title}${withTags}. Clear silhouette, strong line of action, balanced weight, and an instantly readable gesture.`;
@@ -1303,6 +1505,45 @@
     return true;
   }
 
+  const PALETTE_CATEGORY_ORDER = [
+    { key: 'film', label: '영화/시네마 (Film)' },
+    { key: 'era', label: '연도/시대 (Era)' },
+    { key: 'mood', label: '무드/감정 (Mood)' },
+    { key: 'brand', label: '브랜드 성격 (Brand)' },
+    { key: 'material', label: '재질/소재 (Material)' },
+    { key: 'lighting', label: '라이팅/촬영 (Lighting)' },
+    { key: 'season', label: '계절/날씨 (Season)' },
+    { key: 'place', label: '도시/문화 (Place)' },
+    { key: 'use', label: '용도 (Use Case)' },
+    { key: 'theory', label: '조합 규칙 (Color Theory)' }
+  ];
+  const PALETTE_CATEGORY_LABEL = new Map(PALETTE_CATEGORY_ORDER.map((x) => [x.key, x.label]));
+
+  function paletteCategoryKey(style) {
+    return String(style?.paletteCategoryKey || '').trim();
+  }
+  function palettePresetKey(style) {
+    return String(style?.palettePresetKey || '').trim();
+  }
+  function paletteCategoryLabel(key) {
+    const k = String(key || '').trim();
+    return PALETTE_CATEGORY_LABEL.get(k) || k || '기타';
+  }
+  function palettePresetLabel(style) {
+    const label = String(style?.palettePresetLabel || '').trim();
+    const key = palettePresetKey(style);
+    return label || key || '기타';
+  }
+
+  function matchesPaletteQuickFilters(style) {
+    if (directoryMode !== 'palette') return true;
+    const cat = paletteCategoryKey(style);
+    const pre = palettePresetKey(style);
+    if (activePaletteCategory && cat !== activePaletteCategory) return false;
+    if (activePalettePreset && pre !== activePalettePreset) return false;
+    return true;
+  }
+
   function matchesTag(style) {
     if (!activeTag) return true;
     return (style.tags || []).includes(activeTag);
@@ -1325,6 +1566,8 @@
       if (dom.enJump) dom.enJump.innerHTML = '';
       if (dom.poseTypeJump) dom.poseTypeJump.hidden = false;
       if (dom.poseVariantJump) dom.poseVariantJump.hidden = false;
+      if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = true;
+      if (dom.palettePresetJump) dom.palettePresetJump.hidden = true;
       if (dom.poseTypeJump) dom.poseTypeJump.innerHTML = '';
       if (dom.poseVariantJump) dom.poseVariantJump.innerHTML = '';
 
@@ -1410,9 +1653,97 @@
       return;
     }
 
+    if (directoryMode === 'palette') {
+      if (dom.enJump) dom.enJump.hidden = true;
+      if (dom.enJump) dom.enJump.innerHTML = '';
+      if (dom.poseTypeJump) dom.poseTypeJump.hidden = true;
+      if (dom.poseVariantJump) dom.poseVariantJump.hidden = true;
+      if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = false;
+      if (dom.palettePresetJump) dom.palettePresetJump.hidden = false;
+      if (dom.paletteCategoryJump) dom.paletteCategoryJump.innerHTML = '';
+      if (dom.palettePresetJump) dom.palettePresetJump.innerHTML = '';
+
+      const base = STYLES.filter((s) => matchesScope(s, query)).filter(matchesTag);
+      const total = base.length;
+
+      const catCounts = new Map();
+      const presetCounts = new Map();
+      const presetLabels = new Map(); // presetKey -> label
+
+      base.forEach((s) => {
+        const cat = paletteCategoryKey(s);
+        if (cat) catCounts.set(cat, (catCounts.get(cat) || 0) + 1);
+      });
+
+      const presetBase = activePaletteCategory
+        ? base.filter((s) => paletteCategoryKey(s) === activePaletteCategory)
+        : base;
+      presetBase.forEach((s) => {
+        const pre = palettePresetKey(s);
+        if (!pre) return;
+        presetCounts.set(pre, (presetCounts.get(pre) || 0) + 1);
+        if (!presetLabels.has(pre)) presetLabels.set(pre, palettePresetLabel(s));
+      });
+
+      const mk = (rowEl, labelText, count, isActive, onClick) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `jump ${isActive ? 'active' : ''}`.trim();
+        const label = document.createElement('span');
+        label.className = 'jump-label';
+        label.textContent = labelText;
+        const badge = document.createElement('span');
+        badge.className = 'jump-count';
+        badge.textContent = String(count);
+        b.appendChild(label);
+        b.appendChild(badge);
+        if (count === 0) b.disabled = true;
+        b.addEventListener('click', onClick);
+        rowEl.appendChild(b);
+      };
+
+      if (dom.paletteCategoryJump) {
+        mk(dom.paletteCategoryJump, '전체 (All)', total, !activePaletteCategory && !activePalettePreset, () => {
+          activePaletteCategory = '';
+          activePalettePreset = '';
+          buildJumpBars();
+          render();
+        });
+        PALETTE_CATEGORY_ORDER.forEach((meta) => {
+          const c = catCounts.get(meta.key) || 0;
+          mk(dom.paletteCategoryJump, meta.label, c, activePaletteCategory === meta.key, () => {
+            activePaletteCategory = (activePaletteCategory === meta.key) ? '' : meta.key;
+            activePalettePreset = '';
+            buildJumpBars();
+            render();
+          });
+        });
+      }
+
+      if (dom.palettePresetJump) {
+        mk(dom.palettePresetJump, '전체 (All)', activePaletteCategory ? (catCounts.get(activePaletteCategory) || 0) : total, !activePalettePreset, () => {
+          activePalettePreset = '';
+          buildJumpBars();
+          render();
+        });
+        [...presetCounts.keys()].sort().forEach((k) => {
+          const c = presetCounts.get(k) || 0;
+          const label = presetLabels.get(k) || k;
+          mk(dom.palettePresetJump, label, c, activePalettePreset === k, () => {
+            activePalettePreset = (activePalettePreset === k) ? '' : k;
+            buildJumpBars();
+            render();
+          });
+        });
+      }
+      return;
+    }
+
     if (dom.enJump) dom.enJump.hidden = false;
     if (dom.poseTypeJump) dom.poseTypeJump.hidden = true;
     if (dom.poseVariantJump) dom.poseVariantJump.hidden = true;
+    if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = true;
+    if (dom.palettePresetJump) dom.palettePresetJump.hidden = true;
 
     const letters = ['All', ...'0123456789'.split(''), ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
     dom.enJump.innerHTML = '';
@@ -1479,6 +1810,8 @@
     activeDigitInitial = '';
     activePoseType = '';
     activePoseVariant = '';
+    activePaletteCategory = '';
+    activePalettePreset = '';
     clearShuffle({ persist: true });
     if (dom.search) dom.search.value = '';
     buildJumpBars();
@@ -1574,6 +1907,16 @@
     if (directoryMode === 'pose') {
       if (activePoseType) add(`동작: ${poseTypeLabel(activePoseType)}`, () => { activePoseType = ''; buildJumpBars(); render(); });
       if (activePoseVariant) add(`각도: ${poseVariantLabel(activePoseVariant)}`, () => { activePoseVariant = ''; buildJumpBars(); render(); });
+    } else if (directoryMode === 'palette') {
+      if (activePaletteCategory) add(`분류: ${paletteCategoryLabel(activePaletteCategory)}`, () => { activePaletteCategory = ''; activePalettePreset = ''; buildJumpBars(); render(); });
+      if (activePalettePreset) {
+        const example = STYLES.find((s) =>
+          palettePresetKey(s) === activePalettePreset &&
+          (!activePaletteCategory || paletteCategoryKey(s) === activePaletteCategory)
+        );
+        const label = example ? palettePresetLabel(example) : activePalettePreset;
+        add(`세부: ${label}`, () => { activePalettePreset = ''; buildJumpBars(); render(); });
+      }
     } else {
       if (activeDigitInitial) add(`숫자: ${activeDigitInitial}`, () => { activeDigitInitial = ''; buildJumpBars(); render(); });
       if (activeEnInitial) add(`A-Z: ${activeEnInitial}`, () => { activeEnInitial = ''; buildJumpBars(); render(); });
@@ -1583,6 +1926,8 @@
 
     const hasAny = (directoryMode === 'pose')
       ? Boolean(query || activeTag || activePoseType || activePoseVariant)
+      : (directoryMode === 'palette')
+        ? Boolean(query || activeTag || activePaletteCategory || activePalettePreset)
       : Boolean(query || activeTag || activeEnInitial || activeDigitInitial);
     if (hasAny) add('모두 초기화', clearAllFilters, 'danger');
   }
@@ -1596,9 +1941,15 @@
       dom.count.textContent = '데이터가 없습니다. `styles-data.js`가 로드되지 않았을 수 있어요.';
       dom.activeTag.textContent = '';
       dom.grid.innerHTML = '<div class="empty-state">`styles-data.js` 로드 실패 또는 데이터 0개입니다. 브라우저 콘솔(F12)에서 네트워크/에러를 확인해주세요.</div>';
+      updateStyleGuideStep();
       return;
     }
-    let items = STYLES.filter((s) => matchesScope(s, query)).filter(matchesInitials).filter(matchesPoseQuickFilters).filter(matchesTag);
+    let items = STYLES
+      .filter((s) => matchesScope(s, query))
+      .filter(matchesInitials)
+      .filter(matchesPoseQuickFilters)
+      .filter(matchesPaletteQuickFilters)
+      .filter(matchesTag);
     if (shuffleState && shuffleState.directory === directoryMode && Array.isArray(shuffleState.order) && shuffleState.order.length) {
       const rank = new Map(shuffleState.order.map((id, idx) => [id, idx]));
       items.sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9));
@@ -1625,6 +1976,7 @@
       wrapper.appendChild(document.createElement('br'));
       wrapper.appendChild(reset);
       dom.grid.appendChild(wrapper);
+      updateStyleGuideStep();
       return;
     }
 
@@ -1726,6 +2078,8 @@
 
       dom.grid.appendChild(card);
     });
+
+    updateStyleGuideStep();
   }
 
   function init() {
@@ -1738,6 +2092,7 @@
       shuffleState = loadShuffleState();
       if (shuffleState && shuffleState.directory !== directoryMode) shuffleState = null;
       updateShuffleButtons();
+      renderPromptPresetChips();
       render();
     } catch (err) {
       console.error(err);
@@ -1768,6 +2123,7 @@
         saveManualQuery(raw);
         saveManualBaseQuery(stripIntentTokens(raw));
         refreshManualHint();
+        updateGuideStep();
       });
       dom.manualSearch.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -1777,6 +2133,8 @@
       });
     }
     if (dom.manualSearchBtn) dom.manualSearchBtn.addEventListener('click', () => openManualSearch());
+    updateGuideStep();
+    updateStyleGuideStep();
     if (dom.intentResetBtn) {
       dom.intentResetBtn.addEventListener('click', () => {
         selectedIntentKey = '';
@@ -1791,6 +2149,7 @@
         saveManualQuery(next);
         refreshManualHint();
         renderIntentChips();
+        updateGuideStep();
       });
     }
 
