@@ -526,6 +526,105 @@ button:focus-visible, a:focus-visible {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+.controls-meta #resultCount { display: none; }
+
+.jumpbar-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.jumpbar-actions .pill { flex: 0 0 auto; }
+.jumpbar-hint {
+  font-size: 12px;
+  opacity: 0.85;
+  text-align: right;
+}
+
+.chip-preview {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.grid-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.grid-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.grid-meta-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.grid-tools {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.grid-status {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.grid-count {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.grid-count.bump {
+  animation: countBump 260ms ease-out;
+}
+@keyframes countBump {
+  0% { transform: translateY(2px); opacity: 0.7; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.grid-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.load-more {
+  margin: 14px auto 0;
+  width: fit-content;
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px dashed color-mix(in srgb, var(--line) 92%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+.grid-chips .active-chips { margin-top: 0; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--text);
+  box-shadow: var(--shadow-elev);
+}
 .site-switchbar {
   display: flex;
   flex-wrap: nowrap;
@@ -617,6 +716,15 @@ button:focus-visible, a:focus-visible {
   font-size: 12px;
   box-shadow: var(--shadow-elev);
 }
+.flow-step.done {
+  border-color: color-mix(in srgb, var(--line) 78%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 86%, transparent);
+}
+.flow-step.done::after {
+  content: " ✓";
+  font-weight: 900;
+  opacity: 0.9;
+}
 .flow-step.active {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent));
@@ -644,11 +752,7 @@ button:focus-visible, a:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 58%, transparent);
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow-elev);
   border-radius: 16px;
-  animation: guidePulse 1.6s ease-in-out infinite;
-}
-@keyframes guidePulse {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.05); }
+  animation: none;
 }
 
 .guide-soft {
@@ -801,6 +905,11 @@ button:focus-visible, a:focus-visible {
   align-items: center;
   gap: 8px;
 }
+.jump.more {
+  padding: 8px 12px;
+  border-style: dashed;
+  opacity: 0.9;
+}
 .jump:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -870,6 +979,10 @@ body[data-theme="light"] .empty-state {
 }
 
 .style-card {
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  appearance: none;
   position: relative;
   border-radius: 18px;
   overflow: hidden;
@@ -881,12 +994,23 @@ body[data-theme="light"] .empty-state {
   aspect-ratio: 2 / 3;
   min-height: 320px;
   cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 .style-card:focus-visible {
   outline: 3px solid rgba(31, 142, 250, 0.55);
   outline-offset: 3px;
 }
-.style-card:hover { box-shadow: var(--shadow-strong); }
+.style-card:hover {
+  box-shadow: var(--shadow-strong);
+  transform: translateY(-2px) scale(1.01);
+}
+.style-card:hover:not(.selected) {
+  border-color: color-mix(in srgb, var(--accent) 50%, rgba(255,255,255,0.18));
+}
+.style-card:active {
+  transform: translateY(-1px) scale(0.995);
+  box-shadow: var(--shadow-elev);
+}
 .style-card.selected {
   border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,0.22));
   box-shadow: var(--shadow-strong), 0 0 0 3px rgba(107, 112, 255, 0.22);
@@ -951,7 +1075,7 @@ body[data-theme="light"] .empty-state {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(255, 255, 255, 0.22), transparent 55%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 58%);
   opacity: 0;
   transition: opacity 180ms ease;
   mix-blend-mode: screen;
@@ -994,6 +1118,28 @@ body[data-theme="light"] .empty-state {
   overflow: hidden;
   max-width: 100%;
 }
+.palette-hex {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 8px;
+}
+.hex-chip {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  box-shadow: var(--shadow-elev);
+}
+.hex-chip:hover { box-shadow: var(--shadow-elev), var(--focus-ring); }
+.hex-chip:active { box-shadow: var(--shadow-pressed); }
 .toast {
   position: fixed;
   left: 50%;
@@ -1051,6 +1197,7 @@ body[data-theme="light"] .empty-state {
   color: var(--text);
   opacity: 0.92;
   line-height: 1.45;
+  white-space: pre-line;
 }
 .popup-actions {
   margin-top: 12px;
@@ -1066,10 +1213,15 @@ body[data-theme="light"] .empty-state {
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 .tag:hover {
   background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.10);
+  transform: translateY(-1px);
 }
+.tag:active { transform: translateY(0); box-shadow: none; }
+.tag:focus-visible { outline: 3px solid rgba(107, 112, 255, 0.55); outline-offset: 2px; }
 .tag.active {
   background: rgba(31, 142, 250, 0.30);
   border-color: rgba(31, 142, 250, 0.55);

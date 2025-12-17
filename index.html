@@ -81,7 +81,7 @@
             </div>
 
             <div class="controls-row">
-              <div class="sort-toggle" role="group" aria-label="Directory" data-style-guide="dir">
+              <div class="sort-toggle" role="radiogroup" aria-label="Directory" data-style-guide="dir">
                 <button id="dirDesign" type="button" class="seg active">디자인</button>
                 <button id="dirCharacter" type="button" class="seg">캐릭터</button>
                 <button id="dirPhoto" type="button" class="seg">사진/라이팅</button>
@@ -92,12 +92,12 @@
               <label class="grow">
                 스타일 검색
                 <div class="input-wrap" data-style-guide="filter">
-                  <input id="styleSearch" placeholder="예: 미니멀, brutal, 스위스, y2k" autocomplete="off" />
+                  <input id="styleSearch" placeholder="예: 미니멀, brutal, 스위스, y2k (/로 포커스 · Esc 지우기)" autocomplete="off" />
                   <button id="clearSearch" class="input-clear" type="button" aria-label="검색어 지우기" title="지우기 (Esc)">×</button>
                 </div>
               </label>
 
-              <div class="sort-toggle" role="group" aria-label="Sort">
+              <div class="sort-toggle" role="radiogroup" aria-label="Sort">
                 <button id="sortKo" type="button" class="seg active">가나다순</button>
                 <button id="sortEn" type="button" class="seg">ABCD순</button>
               </div>
@@ -108,8 +108,13 @@
               <div class="jumpbar-row" id="poseVariantJump" hidden></div>
               <div class="jumpbar-row" id="paletteCategoryJump" hidden></div>
               <div class="jumpbar-row" id="palettePresetJump" hidden></div>
+              <div class="jumpbar-row" id="characterFacetJump" hidden></div>
               <div class="jumpbar-row" id="enJump"></div>
             </nav>
+            <div class="jumpbar-actions">
+              <button id="jumpResetBtn" type="button" class="pill" hidden>필터 해제</button>
+              <span class="muted jumpbar-hint">Esc로도 검색/필터를 초기화할 수 있어요.</span>
+            </div>
 
             <div class="controls-meta">
               <span id="resultCount" class="muted" aria-live="polite"></span>
@@ -148,6 +153,7 @@
               <div class="chip-block" aria-label="Search expansion options" data-guide="expand">
                 <div class="chip-block-label">검색 확장</div>
                 <div id="intentChips" class="chip-row" role="group" aria-label="Search expansion chips"></div>
+                <div id="intentTokenPreview" class="chip-preview" hidden></div>
                 <div class="search-block-actions" style="margin-top: 8px;">
                   <button id="intentResetBtn" type="button" class="pill">기본값 복원</button>
                 </div>
@@ -157,6 +163,7 @@
               <div id="promptPresetBlock" class="chip-block" aria-label="Image prompt presets" hidden>
                 <div class="chip-block-label">프롬프트 프리셋</div>
                 <div id="promptPresetChips" class="chip-row" role="group" aria-label="Prompt preset chips"></div>
+                <div id="promptPresetPreview" class="chip-preview" hidden></div>
                 <div class="chip-help">팔레트 카드의 “프롬프트 복사”에 적용돼요.</div>
               </div>
 
@@ -170,12 +177,26 @@
                 <div class="recommend-links-sub">검색이 아니라 참고용 사이트로 바로 이동해요.</div>
               </div>
               <div class="recommend-links-row" role="list">
-                <a role="listitem" class="pill recommend-link" href="https://www.posemaniacs.com/ko/poses" target="_blank" rel="noreferrer">Posemaniacs</a>
-                <a role="listitem" class="pill recommend-link" href="https://justsketch.me/" target="_blank" rel="noreferrer">JustSketchMe (3D Pose)</a>
-                <a role="listitem" class="pill recommend-link" href="https://posemy.art/" target="_blank" rel="noreferrer">PoseMy.Art (3D Pose)</a>
-                <a role="listitem" class="pill recommend-link" href="https://magicposer.com/" target="_blank" rel="noreferrer">Magic Poser</a>
-                <a role="listitem" class="pill recommend-link" href="https://www.adorkastock.com/" target="_blank" rel="noreferrer">AdorkaStock</a>
-                <a role="listitem" class="pill recommend-link" href="https://croquiscafe.com/" target="_blank" rel="noreferrer">Croquis Cafe</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.posemaniacs.com/ko/poses" target="_blank" rel="noreferrer" title="3D 인체 포즈 캡처 레퍼런스">Posemaniacs</a>
+                <a role="listitem" class="pill recommend-link" href="https://justsketch.me/" target="_blank" rel="noreferrer" title="브라우저에서 3D 포즈를 직접 조작">JustSketchMe (3D Pose)</a>
+                <a role="listitem" class="pill recommend-link" href="https://posemy.art/" target="_blank" rel="noreferrer" title="3D 포즈/조명 참고용 툴">PoseMy.Art (3D Pose)</a>
+                <a role="listitem" class="pill recommend-link" href="https://magicposer.com/" target="_blank" rel="noreferrer" title="모바일/웹 3D 포즈 설정 툴">Magic Poser</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.adorkastock.com/" target="_blank" rel="noreferrer" title="사진 기반 포즈 레퍼런스(모델)">AdorkaStock</a>
+                <a role="listitem" class="pill recommend-link" href="https://croquiscafe.com/" target="_blank" rel="noreferrer" title="크로키/제스처 드로잉 레퍼런스">Croquis Cafe</a>
+              </div>
+            </div>
+
+            <div id="photoLinks" class="recommend-links" hidden aria-label="Photo reference links">
+              <div class="recommend-links-head">
+                <div class="recommend-links-title">사진/라이팅 추천 링크</div>
+                <div class="recommend-links-sub">톤·조명·구도 레퍼런스를 빠르게 모으기 좋은 사이트예요.</div>
+              </div>
+              <div class="recommend-links-row" role="list">
+                <a role="listitem" class="pill recommend-link" href="https://unsplash.com/" target="_blank" rel="noreferrer">Unsplash</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.pexels.com/" target="_blank" rel="noreferrer">Pexels</a>
+                <a role="listitem" class="pill recommend-link" href="https://www.flickr.com/search/" target="_blank" rel="noreferrer">Flickr Search</a>
+                <a role="listitem" class="pill recommend-link" href="https://film-grab.com/" target="_blank" rel="noreferrer">FilmGrab</a>
+                <a role="listitem" class="pill recommend-link" href="https://shotdeck.com/" target="_blank" rel="noreferrer">ShotDeck (Paid)</a>
               </div>
             </div>
 
@@ -211,7 +232,19 @@
       </section>
 
       <section class="panel" aria-label="Style thumbnails">
-        <div id="styleGrid" class="style-grid"></div>
+        <div class="grid-meta" aria-label="Results and active filters">
+          <div class="grid-meta-left">
+            <div id="gridCount" class="grid-count" aria-live="polite" aria-atomic="true"></div>
+            <span id="filterApplied" class="badge" hidden>필터 적용됨</span>
+          </div>
+          <div class="grid-meta-right">
+            <div id="gridTools" class="grid-tools" aria-label="Tools"></div>
+            <div id="gridStatus" class="grid-status muted" aria-live="polite"></div>
+          </div>
+          <div id="gridChipsHost" class="grid-chips" aria-label="Active filters"></div>
+        </div>
+        <div id="styleGrid" class="style-grid" role="grid" aria-label="Style cards"></div>
+        <div id="loadMore" class="load-more" aria-live="polite" hidden>스크롤하면 더 불러와요…</div>
       </section>
     </div>
 

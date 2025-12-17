@@ -92,8 +92,15 @@
 
   const dom = {
     grid: document.getElementById('styleGrid'),
+    loadMore: document.getElementById('loadMore'),
+    gridCount: document.getElementById('gridCount'),
+    filterApplied: document.getElementById('filterApplied'),
+    gridChipsHost: document.getElementById('gridChipsHost'),
+    gridTools: document.getElementById('gridTools'),
+    gridStatus: document.getElementById('gridStatus'),
     search: document.getElementById('styleSearch'),
     clearSearch: document.getElementById('clearSearch'),
+    jumpResetBtn: document.getElementById('jumpResetBtn'),
     sortKo: document.getElementById('sortKo'),
     sortEn: document.getElementById('sortEn'),
     count: document.getElementById('resultCount'),
@@ -103,6 +110,7 @@
     poseVariantJump: document.getElementById('poseVariantJump'),
     paletteCategoryJump: document.getElementById('paletteCategoryJump'),
     palettePresetJump: document.getElementById('palettePresetJump'),
+    characterFacetJump: document.getElementById('characterFacetJump'),
     enJump: document.getElementById('enJump'),
     themeSelect: document.getElementById('themeSelect'),
     dirDesign: document.getElementById('dirDesign'),
@@ -115,6 +123,7 @@
     siteSwitchbar: document.getElementById('siteSwitchbar'),
     poseLinks: document.getElementById('poseLinks'),
     paletteLinks: document.getElementById('paletteLinks'),
+    photoLinks: document.getElementById('photoLinks'),
     characterLinks: document.getElementById('characterLinks'),
     manualSearch: document.getElementById('manualSearch'),
     manualSearchBtn: document.getElementById('manualSearchBtn'),
@@ -123,9 +132,11 @@
     random200Btn: document.getElementById('random200Btn'),
     randomClearBtn: document.getElementById('randomClearBtn'),
     intentChips: document.getElementById('intentChips'),
+    intentTokenPreview: document.getElementById('intentTokenPreview'),
     intentResetBtn: document.getElementById('intentResetBtn'),
     promptPresetBlock: document.getElementById('promptPresetBlock'),
     promptPresetChips: document.getElementById('promptPresetChips'),
+    promptPresetPreview: document.getElementById('promptPresetPreview'),
     toast: document.getElementById('toast'),
     popup: document.getElementById('popup'),
     popupTitle: document.getElementById('popupTitle'),
@@ -165,7 +176,9 @@
     const flow = document.getElementById('flowSteps');
     if (flow) {
       flow.querySelectorAll('.flow-step[data-step]').forEach((el) => {
-        el.classList.toggle('active', Number(el.dataset.step) === s);
+        const n = Number(el.dataset.step);
+        el.classList.toggle('active', n === s);
+        el.classList.toggle('done', n < s);
       });
     }
     clearGuideFocus();
@@ -200,7 +213,9 @@
     const flow = document.getElementById('styleFlowSteps');
     if (flow) {
       flow.querySelectorAll('.flow-step[data-step]').forEach((el) => {
-        el.classList.toggle('active', Number(el.dataset.step) === s);
+        const n = Number(el.dataset.step);
+        el.classList.toggle('active', n === s);
+        el.classList.toggle('done', n < s);
       });
     }
     clearStyleGuideSoft();
@@ -234,7 +249,7 @@
     if (panelHandle) {
       panelHandle.setAttribute('aria-expanded', next ? 'true' : 'false');
       panelHandle.setAttribute('aria-label', next ? '검색 패널 닫기' : '검색 패널 열기');
-      panelHandle.textContent = next ? '검색 패널 닫기' : '검색 패널';
+      panelHandle.textContent = next ? '검색 패널 닫기' : '검색 패널 열기';
     }
   }
 
@@ -255,6 +270,8 @@
   let activePoseVariant = '';
   let activePaletteCategory = '';
   let activePalettePreset = '';
+  let activeCharacterFacet = '';
+  let palettePresetExpanded = false;
   let directoryMode = 'design';
   let activeSiteKey = 'pinterest';
   let selectedStyleId = '';
@@ -515,6 +532,35 @@
     return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  function hexToRgb(hex) {
+    const h = String(hex || '').trim().replace('#', '');
+    if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+    const n = parseInt(h, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function relativeLuminance({ r, g, b }) {
+    const srgb = [r, g, b].map((v) => {
+      const x = v / 255;
+      return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+  }
+  function normalizePaletteColors(colors) {
+    const unique = [];
+    colors.forEach((c) => {
+      const v = String(c || '').trim().toUpperCase();
+      if (!v) return;
+      if (!unique.includes(v)) unique.push(v);
+    });
+    const scored = unique.map((hex) => {
+      const rgb = hexToRgb(hex);
+      const lum = rgb ? relativeLuminance(rgb) : -1;
+      return { hex, lum };
+    });
+    scored.sort((a, b) => b.lum - a.lum);
+    return scored.map((x) => x.hex);
+  }
+
   function stripIntentTokens(input, mode = directoryMode) {
     let out = String(input || '');
     const intents = intentsForDirectory(mode);
@@ -535,10 +581,13 @@
     dom.promptPresetBlock.hidden = !visible;
     if (!visible) {
       dom.promptPresetChips.innerHTML = '';
+      if (dom.promptPresetPreview) dom.promptPresetPreview.hidden = true;
       return;
     }
 
     const selected = loadPromptPresetKey();
+    dom.promptPresetChips.setAttribute('role', 'radiogroup');
+    dom.promptPresetChips.setAttribute('aria-label', 'Prompt presets');
     dom.promptPresetChips.innerHTML = '';
 
     presets.forEach((p) => {
@@ -546,6 +595,7 @@
       b.type = 'button';
       b.className = `chip ${selected === p.key ? 'active' : ''}`.trim();
       b.textContent = p.label;
+      updateAriaRadio(b, selected === p.key);
       b.addEventListener('click', () => {
         const next = (loadPromptPresetKey() === p.key) ? '' : p.key;
         savePromptPresetKey(next);
@@ -553,6 +603,13 @@
       });
       dom.promptPresetChips.appendChild(b);
     });
+
+    if (dom.promptPresetPreview) {
+      const meta = presets.find((p) => p.key === selected);
+      const token = String(meta?.token || '').trim();
+      dom.promptPresetPreview.hidden = !token;
+      if (token) dom.promptPresetPreview.textContent = `프리셋이 추가하는 내용: ${token}`;
+    }
   }
 
   function getManualBaseFromUI() {
@@ -565,12 +622,15 @@
   function renderIntentChips() {
     if (!dom.intentChips) return;
     dom.intentChips.innerHTML = '';
+    dom.intentChips.setAttribute('role', 'radiogroup');
+    dom.intentChips.setAttribute('aria-label', 'Search extension');
     const intents = intentsForDirectory(directoryMode);
     intents.forEach((i) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = `chip ${selectedIntentKey === i.key ? 'active' : ''}`.trim();
       b.textContent = i.label;
+      updateAriaRadio(b, selectedIntentKey === i.key);
       b.title = selectedStyleId ? '' : '카드를 선택하면 더 정확해져요 (또는 검색창에 직접 입력 후 사용)';
       b.addEventListener('click', () => {
         selectedIntentKey = (selectedIntentKey === i.key) ? '' : i.key;
@@ -595,6 +655,12 @@
       });
       dom.intentChips.appendChild(b);
     });
+
+    if (dom.intentTokenPreview) {
+      const token = selectedIntentKey ? String(intentToken() || '').trim() : '';
+      dom.intentTokenPreview.hidden = !token;
+      if (token) dom.intentTokenPreview.textContent = `추가되는 검색어: ${token}`;
+    }
   }
 
   function effectiveSiteQuery(q, siteKey) {
@@ -603,7 +669,7 @@
   function updateManualPlaceholder() {
     if (!dom.manualSearch) return;
     dom.manualSearch.placeholder =
-      directoryMode === 'character' ? '예: chibi, cel shading, pixel art, turnaround' :
+      directoryMode === 'character' ? '예: 치비(chibi), 셀셰이딩(cel shading), 픽셀(pixel art), 턴어라운드(turnaround)' :
       directoryMode === 'photo' ? '예: rembrandt lighting, low key, golden hour, film' :
       directoryMode === 'palette' ? '예: pastel palette, muted, nord, monochrome' :
       directoryMode === 'pose' ? '예: running, jump, gesture, dynamic, foreshortening' :
@@ -648,9 +714,9 @@
   }
 
   function styleQuery(style) {
-    const raw = String(style?.q || '').trim();
-    if (raw) return raw;
     if (directoryMode === 'pose') {
+      const ko = String(style?.ko || '').trim();
+      const en = String(style?.en || '').trim();
       const poseType = String(style?.poseType || '').trim() || String(style?.id || '').trim().split('-')[0] || '';
       const id = String(style?.id || '').trim();
       const variantRaw = (poseType && id.startsWith(`${poseType}-`)) ? id.slice(poseType.length + 1) : '';
@@ -658,7 +724,15 @@
         .replace(/-/g, ' ')
         .replace(/^3 4$/, 'three quarter view')
         .trim();
-      return joinTokens([poseType, variant, 'pose reference']);
+      return joinTokens([ko, en, poseType, variant, 'pose reference']);
+    }
+    const raw = String(style?.q || '').trim();
+    if (raw) return raw;
+    if (directoryMode === 'character') {
+      const en = String(style?.en || '').trim();
+      const ko = String(style?.ko || '').trim();
+      const base = joinTokens([ko, en]);
+      return joinTokens([base, 'character design']);
     }
     const en = String(style?.en || '').trim();
     if (en) return en.replace(/[·/]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -672,9 +746,15 @@
     selectedStyleId = style.id;
 
     if (dom.grid) {
-      dom.grid.querySelectorAll('.style-card.selected').forEach((el) => el.classList.remove('selected'));
+      dom.grid.querySelectorAll('.style-card.selected').forEach((el) => {
+        el.classList.remove('selected');
+        try { el.setAttribute('aria-pressed', 'false'); } catch { /* ignore */ }
+      });
       const next = dom.grid.querySelector(`.style-card[data-id="${CSS.escape(style.id)}"]`);
-      if (next) next.classList.add('selected');
+      if (next) {
+        next.classList.add('selected');
+        try { next.setAttribute('aria-pressed', 'true'); } catch { /* ignore */ }
+      }
     }
 
     selectedCardQuery = styleQuery(style);
@@ -688,6 +768,47 @@
     updateStyleGuideStep();
 
     openPanel({ pin: true });
+    bringExternalSearchIntoView({ focus: true });
+  }
+
+  function renderGridTools() {
+    if (!dom.gridTools) return;
+    dom.gridTools.innerHTML = '';
+
+    const mk = (label, onClick, title = '') => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pill';
+      b.textContent = label;
+      if (title) b.title = title;
+      b.addEventListener('click', onClick);
+      dom.gridTools.appendChild(b);
+    };
+
+    if (directoryMode === 'pose') {
+      if (shuffleState && shuffleState.directory === directoryMode) {
+        mk('섞기 해제', () => { clearShuffle({ persist: true }); render(); }, '카드 순서를 원래 정렬로 되돌립니다.');
+        mk('다시 섞기', () => makeShuffle(), '카드 순서를 다시 무작위로 섞습니다.');
+      } else {
+        mk('카드섞기', () => makeShuffle(), '포즈 카드를 무작위로 섞습니다.');
+      }
+      return;
+    }
+
+    // 다른 디렉토리는 조용히 숨김(필요하면 여기서 확장)
+  }
+
+  function updateGridStatusLine() {
+    if (!dom.gridStatus) return;
+    if (directoryMode !== 'pose') {
+      dom.gridStatus.textContent = '';
+      return;
+    }
+    const parts = [];
+    parts.push('필터 구조: 동작 → 각도');
+    if (activePoseType) parts.push(`동작: ${poseTypeLabel(activePoseType)}`);
+    if (activePoseVariant) parts.push(`각도: ${poseVariantLabel(activePoseVariant)}`);
+    dom.gridStatus.textContent = parts.join(' · ');
   }
 
   function getPreferredSite() {
@@ -701,12 +822,8 @@
     if (dom.directorySubtitle) dom.directorySubtitle.textContent =
       '스타일을 고르고(필터), 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.';
 
-    if (dom.search) dom.search.placeholder =
-      directoryMode === 'character' ? '예: 치비, 셀셰이딩, 픽셀아트, 잉크, 만화' :
-      directoryMode === 'photo' ? '예: rembrandt, low key, golden hour, bokeh, film' :
-      directoryMode === 'palette' ? '예: pastel, neon, muted, nord, monochrome' :
-      directoryMode === 'pose' ? '예: running, jump, gesture, dynamic, foreshortening' :
-      '예: 미니멀, brutal, 스위스, y2k';
+    applyStyleSearchPlaceholder();
+    updateManualPlaceholder();
 
     renderSiteSwitches();
     updateGuideStep();
@@ -714,6 +831,8 @@
 
   function renderSiteSwitches() {
     if (!dom.siteSwitchbar) return;
+    dom.siteSwitchbar.setAttribute('role', 'radiogroup');
+    dom.siteSwitchbar.setAttribute('aria-label', 'External search sites');
     const keys = sitesForDirectory(directoryMode);
     if (!keys.includes(activeSiteKey)) activeSiteKey = keys[0] || 'pinterest';
     dom.siteSwitchbar.innerHTML = '';
@@ -725,6 +844,7 @@
       b.className = `site-switch ${k === activeSiteKey ? 'active' : ''}`.trim();
       b.textContent = meta.label;
       b.dataset.siteKey = k;
+      updateAriaRadio(b, k === activeSiteKey);
       b.addEventListener('click', () => {
         siteTouched = true;
         applySite(k);
@@ -733,6 +853,7 @@
     });
     if (dom.poseLinks) dom.poseLinks.hidden = directoryMode !== 'pose';
     if (dom.paletteLinks) dom.paletteLinks.hidden = directoryMode !== 'palette';
+    if (dom.photoLinks) dom.photoLinks.hidden = directoryMode !== 'photo';
     if (dom.characterLinks) dom.characterLinks.hidden = directoryMode !== 'character';
     updateGuideStep();
   }
@@ -759,6 +880,11 @@
       }
     }
 
+    if (directoryMode === 'photo') {
+      activeEnInitial = '';
+      activeDigitInitial = '';
+    }
+
     if (directoryMode === 'palette') {
       // palette: no A-Z/숫자 점프, category/preset 탐색
       activeEnInitial = '';
@@ -778,11 +904,24 @@
       }
     }
 
+    if (directoryMode !== 'character') {
+      activeCharacterFacet = '';
+      if (dom.characterFacetJump) {
+        dom.characterFacetJump.hidden = true;
+        dom.characterFacetJump.innerHTML = '';
+      }
+    }
+
     if (dom.dirDesign) dom.dirDesign.classList.toggle('active', directoryMode === 'design');
     if (dom.dirCharacter) dom.dirCharacter.classList.toggle('active', directoryMode === 'character');
     if (dom.dirPhoto) dom.dirPhoto.classList.toggle('active', directoryMode === 'photo');
     if (dom.dirPalette) dom.dirPalette.classList.toggle('active', directoryMode === 'palette');
     if (dom.dirPose) dom.dirPose.classList.toggle('active', directoryMode === 'pose');
+    updateAriaRadio(dom.dirDesign, directoryMode === 'design');
+    updateAriaRadio(dom.dirCharacter, directoryMode === 'character');
+    updateAriaRadio(dom.dirPhoto, directoryMode === 'photo');
+    updateAriaRadio(dom.dirPalette, directoryMode === 'palette');
+    updateAriaRadio(dom.dirPose, directoryMode === 'pose');
 
     if (dom.directoryTitle) dom.directoryTitle.textContent =
       directoryMode === 'character' ? 'Character Style Directory' :
@@ -794,12 +933,7 @@
     if (dom.directorySubtitle) dom.directorySubtitle.textContent =
       '스타일을 고르고(필터), 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.';
 
-    if (dom.search) dom.search.placeholder =
-      directoryMode === 'character' ? '예: 치비, 셀셰이딩, 픽셀아트, 잉크, 만화' :
-      directoryMode === 'photo' ? '예: rembrandt, low key, golden hour, bokeh, film' :
-      directoryMode === 'palette' ? '예: pastel, neon, muted, nord, monochrome' :
-      directoryMode === 'pose' ? '예: running, sitting, sword, jump, gesture' :
-      '예: 미니멀, brutal, 스위스, y2k';
+    applyStyleSearchPlaceholder();
 
     renderSiteSwitches();
     selectedCardQuery = '';
@@ -857,6 +991,96 @@
     const ring = `hsl(${(hue + 180) % 360} 92% 72% / 0.55)`;
     const label = escXml((style.ko || style.en || style.id).toString().slice(0, 28));
     const sub = escXml((style.en || '').toString().slice(0, 32));
+    const tags = new Set((style.tags || []).map((t) => String(t || '').toLowerCase()));
+    const variant = (() => {
+      if (tags.has('pixel') || tags.has('pixel-art')) return 'pixel';
+      if (tags.has('3d')) return '3d';
+      if (tags.has('manga') || tags.has('ink-line')) return 'ink';
+      if (tags.has('chibi')) return 'chibi';
+      return ['toon', 'shape', 'dot', 'stripe'][hashToHue(style.id) % 4];
+    })();
+
+    const pattern = (() => {
+      if (variant === 'pixel') {
+        return `<g opacity="0.18">
+  ${Array.from({ length: 10 }).map((_, y) =>
+    Array.from({ length: 7 }).map((__, x) =>
+      `<rect x="${70 + x * 70}" y="${80 + y * 40}" width="26" height="26" fill="rgba(0,0,0,0.45)"/>`
+    ).join('')
+  ).join('')}
+</g>`;
+      }
+      if (variant === 'stripe') {
+        return `<g opacity="0.20" fill="rgba(0,0,0,0.35)">
+  ${Array.from({ length: 14 }).map((_, i) =>
+    `<rect x="${-120 + i * 70}" y="-60" width="26" height="980" transform="rotate(18 300 450)"/>`
+  ).join('')}
+</g>`;
+      }
+      if (variant === 'dot') {
+        return `<g opacity="0.18" fill="rgba(255,255,255,0.55)">
+  ${Array.from({ length: 40 }).map((_, i) => {
+    const x = 40 + ((i * 83) % 520);
+    const y = 60 + ((i * 131) % 520);
+    const r = 5 + ((i * 7) % 10);
+    return `<circle cx="${x}" cy="${y}" r="${r}"/>`;
+  }).join('')}
+</g>`;
+      }
+      return '';
+    })();
+
+    const heroArt = (() => {
+      if (variant === 'pixel') {
+        return `<g filter="url(#s)">
+  <rect x="176" y="186" width="248" height="248" rx="28" fill="rgba(255,255,255,0.14)" stroke="${ring}" stroke-width="10"/>
+  <g opacity="0.92" fill="rgba(0,0,0,0.28)">
+    <rect x="250" y="268" width="24" height="24"/><rect x="326" y="268" width="24" height="24"/>
+    <rect x="274" y="316" width="52" height="20"/>
+  </g>
+  <g opacity="0.22" fill="rgba(0,0,0,0.35)">
+    ${Array.from({ length: 9 }).map((_, i) => `<rect x="${200 + i * 22}" y="470" width="10" height="120" rx="5"/>`).join('')}
+  </g>
+</g>`;
+      }
+      if (variant === '3d') {
+        return `<g filter="url(#s)">
+  <circle cx="300" cy="300" r="138" fill="rgba(255,255,255,0.14)" stroke="${ring}" stroke-width="10"/>
+  <ellipse cx="300" cy="330" rx="128" ry="92" fill="rgba(0,0,0,0.14)"/>
+  <path d="M205 520 C220 450 380 450 395 520 C410 605 190 605 205 520 Z" fill="rgba(0,0,0,0.18)" stroke="rgba(255,255,255,0.22)" stroke-width="6"/>
+  <circle cx="260" cy="292" r="14" fill="rgba(0,0,0,0.22)"/>
+  <circle cx="340" cy="292" r="14" fill="rgba(0,0,0,0.22)"/>
+  <path d="M275 342 Q300 362 325 342" fill="none" stroke="rgba(0,0,0,0.24)" stroke-width="10" stroke-linecap="round"/>
+</g>`;
+      }
+      if (variant === 'ink') {
+        return `<g filter="url(#s)">
+  <path d="M160 300 C210 180 390 180 440 300 C470 374 428 436 364 460 C320 476 280 476 236 460 C172 436 130 374 160 300 Z"
+    fill="rgba(255,255,255,0.12)" stroke="${ring}" stroke-width="10"/>
+  <path d="M190 325 C240 300 270 300 300 320 C330 340 360 340 410 320"
+    fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M220 515 C250 470 350 470 380 515" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="18" stroke-linecap="round"/>
+</g>`;
+      }
+      if (variant === 'chibi') {
+        return `<g filter="url(#s)">
+  <ellipse cx="300" cy="290" rx="160" ry="140" fill="rgba(255,255,255,0.14)" stroke="${ring}" stroke-width="10"/>
+  <rect x="250" y="440" width="100" height="140" rx="50" fill="rgba(0,0,0,0.16)" stroke="rgba(255,255,255,0.20)" stroke-width="6"/>
+  <circle cx="245" cy="290" r="16" fill="rgba(0,0,0,0.24)"/>
+  <circle cx="355" cy="290" r="16" fill="rgba(0,0,0,0.24)"/>
+  <path d="M275 342 Q300 365 325 342" fill="none" stroke="rgba(0,0,0,0.24)" stroke-width="10" stroke-linecap="round"/>
+</g>`;
+      }
+      // generic
+      return `<g filter="url(#s)">
+  <circle cx="300" cy="310" r="150" fill="rgba(255,255,255,0.16)" stroke="${ring}" stroke-width="10"/>
+  <path d="M205,565 C215,455 385,455 395,565 C405,675 195,675 205,565 Z"
+    fill="rgba(0,0,0,0.18)" stroke="rgba(255,255,255,0.25)" stroke-width="6" />
+  <circle cx="250" cy="300" r="16" fill="rgba(0,0,0,0.26)"/>
+  <circle cx="350" cy="300" r="16" fill="rgba(0,0,0,0.26)"/>
+  <path d="M275,350 Q300,370 325,350" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="10" stroke-linecap="round"/>
+</g>`;
+    })();
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
   <defs>
@@ -874,14 +1098,8 @@
   </defs>
   <rect x="0" y="0" width="600" height="900" fill="url(#g)"/>
   <rect x="0" y="0" width="600" height="900" fill="url(#r)"/>
-  <g filter="url(#s)">
-    <circle cx="300" cy="310" r="150" fill="rgba(255,255,255,0.16)" stroke="${ring}" stroke-width="10"/>
-    <path d="M205,565 C215,455 385,455 395,565 C405,675 195,675 205,565 Z"
-      fill="rgba(0,0,0,0.18)" stroke="rgba(255,255,255,0.25)" stroke-width="6" />
-    <circle cx="250" cy="300" r="16" fill="rgba(0,0,0,0.26)"/>
-    <circle cx="350" cy="300" r="16" fill="rgba(0,0,0,0.26)"/>
-    <path d="M275,350 Q300,370 325,350" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="10" stroke-linecap="round"/>
-  </g>
+  ${pattern}
+  ${heroArt}
   <g>
     <rect x="36" y="640" width="528" height="208" rx="22" fill="rgba(0,0,0,0.40)" stroke="rgba(255,255,255,0.18)"/>
     <text x="60" y="695" fill="#fff" font-size="34" font-weight="800" font-family="Noto Sans KR, system-ui, -apple-system, sans-serif">${label}</text>
@@ -969,18 +1187,63 @@
   function poseThumbDataUri(style) {
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(poseThumbSvg(style))}`;
   }
+
+  function designThumbSvg(style) {
+    const key = String(style?.id || style?.en || style?.ko || '').toLowerCase();
+    const hue = hashToHue(key);
+    const bg1 = `hsl(${hue} 68% 46%)`;
+    const bg2 = `hsl(${(hue + 26) % 360} 70% 40%)`;
+    const bg3 = `hsl(${(hue + 180) % 360} 62% 44%)`;
+    const label = escXml((style.ko || style.en || style.id).toString().slice(0, 26));
+    const sub = escXml((style.en || '').toString().slice(0, 30));
+    const tags = (Array.isArray(style.tags) ? style.tags : [])
+      .slice(0, 3)
+      .map((t) => escXml(String(t || '').slice(0, 14)))
+      .filter(Boolean)
+      .join(' · ');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${bg1}"/>
+      <stop offset="0.55" stop-color="${bg2}"/>
+      <stop offset="1" stop-color="${bg3}"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+  </defs>
+  <rect x="0" y="0" width="600" height="900" fill="url(#g)"/>
+  <g opacity="0.22">
+    <circle cx="110" cy="160" r="120" fill="rgba(255,255,255,0.55)"/>
+    <circle cx="520" cy="220" r="160" fill="rgba(0,0,0,0.28)"/>
+    <rect x="70" y="560" width="460" height="110" rx="26" fill="rgba(255,255,255,0.22)"/>
+  </g>
+  <rect x="0" y="560" width="600" height="340" fill="rgba(0,0,0,0.55)"/>
+  <g filter="url(#s)">
+    <text x="52" y="636" fill="#fff" font-size="42" font-weight="900" font-family="Noto Sans KR, system-ui, -apple-system, sans-serif">${label}</text>
+    <text x="52" y="682" fill="rgba(255,255,255,0.86)" font-size="22" font-weight="700" font-family="Noto Sans KR, system-ui, -apple-system, sans-serif">${sub}</text>
+    <text x="52" y="730" fill="rgba(255,255,255,0.74)" font-size="18" font-weight="600" font-family="Noto Sans KR, system-ui, -apple-system, sans-serif">${tags}</text>
+  </g>
+</svg>`;
+  }
+  function designThumbDataUri(style) {
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(designThumbSvg(style))}`;
+  }
   function applyThumb(imgEl, style) {
     const p = thumbPaths(style.id);
     const charFallback = characterThumbDataUri(style);
     const paletteFallback = paletteThumbDataUri(style);
     const poseFallback = poseThumbDataUri(style);
+    const designFallback = designThumbDataUri(style);
     const order = directoryMode === 'character'
       ? [p.jpg, p.png, p.svg, charFallback]
       : directoryMode === 'palette'
         ? [paletteFallback]
         : directoryMode === 'pose'
           ? [poseFallback]
-      : [p.jpg, p.png, p.svg];
+      : [p.jpg, p.png, p.svg, designFallback];
     let idx = 0;
     imgEl.onerror = () => {
       idx += 1;
@@ -1027,9 +1290,297 @@
     try { dom.popupClose?.focus({ preventScroll: true }); } catch { /* ignore */ }
   }
 
+  function previewText(text, max = 90) {
+    const s = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!s) return '';
+    if (s.length <= max) return s;
+    return `${s.slice(0, Math.max(20, max)).trim()}…`;
+  }
+
+  const BATCH_SIZE = 40;
+  let renderSig = '';
+  let renderedCount = 0;
+  let currentItems = [];
+  let ioMore = null;
+
+  function filterSignature() {
+    const base = [
+      directoryMode,
+      sortMode,
+      query,
+      activeTag,
+      activeEnInitial,
+      activeDigitInitial,
+      activePoseType,
+      activePoseVariant,
+      activePaletteCategory,
+      activePalettePreset,
+      activeCharacterFacet,
+      shuffleState && shuffleState.directory === directoryMode ? 'shuffled' : ''
+    ];
+    return base.map((x) => String(x || '')).join('|');
+  }
+
+  function updateAriaRadio(el, isChecked) {
+    if (!el) return;
+    el.setAttribute('role', 'radio');
+    el.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+  }
+
+  function applyStyleSearchPlaceholder() {
+    if (!dom.search) return;
+    const hint = '(/로 포커스 · Esc 지우기)';
+    const base =
+      directoryMode === 'character' ? '예: 치비, 셀셰이딩, 픽셀아트, 잉크, 만화' :
+      directoryMode === 'photo' ? '예: rembrandt, low key, golden hour, bokeh, film' :
+      directoryMode === 'palette' ? '예: matrix, luxe, triadic, 1980s, neon' :
+      directoryMode === 'pose' ? '예: running, jump, gesture, dynamic, foreshortening' :
+      '예: 미니멀, brutal, 스위스, y2k';
+    dom.search.placeholder = `${base} ${hint}`;
+  }
+
   function closePopup() {
     if (!dom.popup) return;
     dom.popup.hidden = true;
+  }
+
+  function isInViewport(el) {
+    if (!el) return false;
+    const r = el.getBoundingClientRect();
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    return r.bottom >= 0 && r.right >= 0 && r.top <= vh && r.left <= vw;
+  }
+
+  function bringExternalSearchIntoView({ focus = true } = {}) {
+    const target = dom.manualSearch || dom.manualSearchBtn;
+    if (!target) return;
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    if (isMobile || !isInViewport(target)) {
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch { /* ignore */ }
+    }
+    if (focus && dom.manualSearch) {
+      try { dom.manualSearch.focus({ preventScroll: true }); } catch { /* ignore */ }
+    }
+  }
+
+  let lastGridCountText = '';
+  function updateGridMeta({ visible = 0, total = 0, filtered = false, shown = null } = {}) {
+    const showPart = (typeof shown === 'number' && shown > 0 && shown < visible) ? ` · 표시 ${shown}/${visible}` : '';
+    const text = filtered
+      ? `결과: ${visible}개${showPart} / 전체 ${total}개`
+      : `전체: ${total}개${showPart}`;
+
+    if (dom.gridCount) {
+      dom.gridCount.textContent = text;
+      if (text !== lastGridCountText) {
+        dom.gridCount.classList.remove('bump');
+        void dom.gridCount.offsetWidth; // restart animation
+        dom.gridCount.classList.add('bump');
+        window.setTimeout(() => dom.gridCount?.classList.remove('bump'), 300);
+        lastGridCountText = text;
+      }
+    }
+    if (dom.count) dom.count.textContent = text;
+    if (dom.filterApplied) dom.filterApplied.hidden = !filtered;
+  }
+
+  function hasJumpFilter() {
+    if (directoryMode === 'pose') return Boolean(activePoseType || activePoseVariant);
+    if (directoryMode === 'palette') return Boolean(activePaletteCategory || activePalettePreset);
+    if (directoryMode === 'character') return Boolean(activeCharacterFacet);
+    return Boolean(activeEnInitial || activeDigitInitial);
+  }
+
+  function updateJumpReset() {
+    if (!dom.jumpResetBtn) return;
+    dom.jumpResetBtn.hidden = !hasJumpFilter();
+  }
+
+  function clearJumpFilter() {
+    if (directoryMode === 'pose') {
+      activePoseType = '';
+      activePoseVariant = '';
+    } else if (directoryMode === 'palette') {
+      activePaletteCategory = '';
+      activePalettePreset = '';
+    } else if (directoryMode === 'character') {
+      activeCharacterFacet = '';
+    } else {
+      activeEnInitial = '';
+      activeDigitInitial = '';
+    }
+    buildJumpBars();
+    render();
+  }
+
+  function ensureLoadMoreObserver() {
+    if (!dom.loadMore) return;
+    if (ioMore) return;
+    if (!('IntersectionObserver' in window)) return;
+    ioMore = new IntersectionObserver((entries) => {
+      const hit = entries.some((e) => e.isIntersecting);
+      if (!hit) return;
+      appendNextBatch();
+    }, { root: null, rootMargin: '900px 0px', threshold: 0 });
+    ioMore.observe(dom.loadMore);
+  }
+
+  function syncLoadMore() {
+    if (!dom.loadMore) return;
+    const total = currentItems.length;
+    const shown = renderedCount;
+    const hasMore = shown < total;
+    dom.loadMore.hidden = !hasMore;
+    if (hasMore) {
+      dom.loadMore.textContent = `스크롤하면 더 불러와요… (${shown}/${total})`;
+    }
+  }
+
+  function appendNextBatch() {
+    if (!dom.grid) return;
+    if (!Array.isArray(currentItems) || currentItems.length === 0) {
+      syncLoadMore();
+      return;
+    }
+    if (renderedCount >= currentItems.length) {
+      syncLoadMore();
+      return;
+    }
+    const start = renderedCount;
+    const end = Math.min(currentItems.length, start + BATCH_SIZE);
+    const frag = document.createDocumentFragment();
+    for (let i = start; i < end; i += 1) {
+      frag.appendChild(createStyleCard(currentItems[i]));
+    }
+    dom.grid.appendChild(frag);
+    renderedCount = end;
+    syncLoadMore();
+  }
+
+  function resetBatch(items) {
+    currentItems = Array.isArray(items) ? items : [];
+    renderedCount = 0;
+    if (dom.grid) dom.grid.innerHTML = '';
+    ensureLoadMoreObserver();
+    appendNextBatch();
+  }
+
+  function createStyleCard(style) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = `style-card ${selectedStyleId === style.id ? 'selected' : ''}`.trim();
+    card.dataset.id = style.id;
+    card.setAttribute('aria-pressed', selectedStyleId === style.id ? 'true' : 'false');
+    const tagText = (style.tags || []).slice(0, 3).map((t) => `#${t}`).join(', ');
+    const ariaTags = tagText ? ` 태그: ${tagText}.` : '';
+    card.setAttribute('aria-label', `${style.ko} (${style.en}).${ariaTags} 클릭하면 외부 검색 키워드가 적용됩니다.`);
+    card.title = `${style.ko} / ${style.en}`;
+    card.addEventListener('click', () => selectStyle(style));
+
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.alt = `${style.ko} 썸네일`;
+    applyThumb(img, style);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'style-overlay';
+
+    const top = document.createElement('div');
+    top.className = 'style-top';
+
+    const title = document.createElement('div');
+    title.className = 'style-title';
+    title.textContent = style.ko;
+    title.style.fontSize = `${fontSizeFor(style.ko, 18, 13, 10)}px`;
+
+    const subtitle = document.createElement('div');
+    subtitle.className = 'style-subtitle';
+    subtitle.textContent = `${style.en}`;
+    subtitle.style.fontSize = `${fontSizeFor(style.en, 14, 11, 18)}px`;
+
+    top.appendChild(title);
+    top.appendChild(subtitle);
+
+    const copyPrompt = document.createElement('button');
+    copyPrompt.type = 'button';
+    copyPrompt.className = 'prompt-copy-icon';
+    copyPrompt.setAttribute('aria-label', '샘플 이미지 프롬프트 복사');
+    copyPrompt.title = '샘플 이미지 프롬프트 복사';
+    copyPrompt.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M8 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="2"/>
+  <path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
+</svg>`;
+    copyPrompt.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const prompt = sampleImagePrompt(style);
+      const ok = await writeClipboard(prompt);
+      if (ok) {
+        const isPalette = directoryMode === 'palette' && Array.isArray(style.colors) && style.colors.length >= 5;
+        const lines = [
+          '이미지 생성툴에 붙여넣기 → 생성',
+          `미리보기: ${previewText(prompt, 110)}`,
+          isPalette ? '(HEX 5개 포함)' : ''
+        ].filter(Boolean);
+        showPopup({
+          title: '복사 완료!',
+          desc: lines.join('\n')
+        });
+      }
+    });
+
+    const tags = document.createElement('div');
+    tags.className = 'style-tags';
+    (style.tags || []).slice(0, 3).forEach((t) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      const isOn = activeTag === t;
+      b.className = `tag ${isOn ? 'active' : ''}`.trim();
+      b.textContent = `#${t}`;
+      b.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        activeTag = activeTag === t ? '' : t;
+        render();
+      });
+      tags.appendChild(b);
+    });
+
+    overlay.appendChild(copyPrompt);
+    overlay.appendChild(top);
+    overlay.appendChild(tags);
+
+    if (directoryMode === 'palette') {
+      const colors = Array.isArray(style.colors) ? style.colors.slice(0, 5) : [];
+      if (colors.length) {
+        const hexRow = document.createElement('div');
+        hexRow.className = 'palette-hex';
+        colors.forEach((hex) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'hex-chip';
+          const value = String(hex || '').toUpperCase().trim();
+          b.textContent = value;
+          b.title = '클릭하여 복사';
+          b.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const ok = await writeClipboard(value);
+            if (ok) showToast(`HEX 복사됨: ${value}`);
+          });
+          hexRow.appendChild(b);
+        });
+        overlay.appendChild(hexRow);
+      }
+    }
+
+    card.appendChild(img);
+    card.appendChild(overlay);
+
+    return card;
   }
 
   function sampleImagePrompt(style) {
@@ -1048,6 +1599,29 @@
     const tagPhrase = tags.length ? tags.join(', ') : '';
     const withTags = tagPhrase ? ` with ${tagPhrase}` : '';
 
+    function designTraitPhrases() {
+      const rawTags = (style?.tags || []).slice(0, 5).map((t) => ascii(t).toLowerCase()).filter(Boolean);
+      const tagSet = new Set(rawTags);
+      const out = [];
+      const push = (s) => { if (s && !out.includes(s)) out.push(s); };
+
+      if (tagSet.has('grid') || tagSet.has('swiss') || tagSet.has('typography')) push('strict grid alignment, clear margins, typographic hierarchy');
+      if (tagSet.has('minimal') || tagSet.has('minimalism')) push('clean negative space, restrained layout, sharp information hierarchy');
+      if (tagSet.has('brutal') || tagSet.has('brutalism')) push('raw brutal layout, oversized type, high contrast, intentionally rough UI');
+      if (tagSet.has('neon') || tagSet.has('glow')) push('neon glow accents, luminous highlights, saturated contrast');
+      if (tagSet.has('retro') || tagSet.has('vintage')) push('retro print vibe, halftone texture, aged paper feel');
+      if (tagSet.has('y2k') || tagSet.has('chrome')) push('chrome glossy materials, inflated shapes, futuristic UI highlights');
+      if (tagSet.has('grain') || tagSet.has('noise') || tagSet.has('texture')) push('subtle grain texture, film-like noise, tactile surfaces');
+      if (tagSet.has('glass') || tagSet.has('glassmorphism')) push('translucent glass panels, soft blur layers, specular highlights');
+      if (tagSet.has('neumorphism') || tagSet.has('neumorphic')) push('soft extruded surfaces, inner shadows, pill controls');
+      if (tagSet.has('color') || tagSet.has('gradient') || tagSet.has('mesh')) push('bold color system, smooth gradients, cohesive palette');
+      if (tagSet.has('ornate') || tagSet.has('gothic')) push('ornate details, decorative motifs, dramatic contrast');
+      if (tagSet.has('geometric')) push('geometric shapes, crisp edges, strong visual rhythm');
+      if (tagSet.has('illustration')) push('illustration-forward composition, clear linework, graphic shapes');
+
+      return out.slice(0, 3).join('. ');
+    }
+
     const preset = (() => {
       const key = String(style?.id || '').trim().toLowerCase();
       if (directoryMode === 'design' && (key === 'ukiyoe' || key === 'ukiyo-e')) {
@@ -1058,13 +1632,77 @@
 
     const basePrompt = (() => {
       if (directoryMode === 'design') {
-        return preset || `Signature abstract graphic design key visual in the ${title} aesthetic${withTags}. Iconic shapes, pattern language, and material mood that instantly reads as ${title}.`;
+        const traits = designTraitPhrases();
+        const traitLine = traits ? ` ${traits}.` : '';
+        return preset || `Signature graphic design key visual in the ${title} style${withTags}.${traitLine} Clean typography, crisp edges, and an instantly recognizable ${title} vibe.`;
       }
       if (directoryMode === 'character') {
-        return `Signature character illustration in the ${title} style${withTags}. Distinct silhouette, clear linework, confident shading, and a color treatment that feels unmistakably ${title}.`;
+        const t = new Set((style?.tags || []).map((x) => String(x || '').toLowerCase()));
+        const isPixel = t.has('pixel') || t.has('pixel-art');
+        const is3d = t.has('3d');
+        const isChibi = t.has('chibi');
+        const isReal = t.has('realistic');
+        const isToon = t.has('toon') || t.has('cel-shading');
+        const isInk = t.has('manga') || t.has('ink-line');
+        const isTurnaround = t.has('turnaround');
+
+        const core = (() => {
+          if (isPixel) return 'Pixel sprite readability, limited palette, crisp silhouette, clean outline.';
+          if (is3d && isReal) return 'Realistic anatomy, physically plausible shading, studio lighting, clean materials.';
+          if (is3d) return '3D stylized character, clean materials, readable silhouette, soft studio lighting.';
+          if (isChibi) return 'Chibi proportions (big head, small body), cute facial features, simple shapes.';
+          if (isInk) return 'Ink lineart, confident strokes, high readability, poster-friendly contrast.';
+          if (isToon) return 'Cel shading, bold shapes, clean linework, graphic color blocks.';
+          if (isReal) return 'Natural proportions, believable lighting, subtle texture, grounded character design.';
+          return 'Distinct silhouette, clear proportions, readable face, consistent rendering style.';
+        })();
+
+        const sheet = isTurnaround ? ' Turnaround-friendly: front/side/back views.' : '';
+        return `Signature character reference image in the ${title} style. ${core}${sheet}`;
       }
       if (directoryMode === 'photo') {
-        return `Signature photograph capturing the ${title} look${withTags}. Lighting direction, shadow character, lens feel, and color grading that clearly communicates ${title}.`;
+        const idRaw = String(style?.id || '').toLowerCase();
+        const t = new Set((style?.tags || []).map((x) => String(x || '').toLowerCase()));
+        const isPortrait = /portrait|beauty|headshot/.test(idRaw) || t.has('portrait');
+        const isProduct = /product|still-life|stilllife/.test(idRaw) || t.has('product');
+        const isFood = /food/.test(idRaw) || t.has('food');
+        const isInterior = /interior|room|space|architecture/.test(idRaw) || t.has('interior');
+        const subject = isPortrait ? 'portrait subject' : isProduct ? 'product on a tabletop' : isFood ? 'food plate' : isInterior ? 'interior space' : 'subject';
+
+        const camera = (() => {
+          if (isPortrait) return '85mm lens, three-quarter view, eye-level';
+          if (isProduct) return '50mm lens, clean angle, controlled perspective';
+          if (isFood) return '50mm lens, top-down or 45-degree angle, shallow depth of field';
+          if (isInterior) return '24mm lens, straight verticals, wide composition';
+          return 'natural perspective, clear framing';
+        })();
+
+        const lighting = (() => {
+          if (idRaw.includes('rembrandt')) return 'Rembrandt lighting, defined shadow triangle, soft key';
+          if (idRaw.includes('split')) return 'Split lighting, dramatic contrast, hard shadow edge';
+          if (idRaw.includes('loop')) return 'Loop lighting, gentle nose shadow, flattering contrast';
+          if (idRaw.includes('butterfly')) return 'Butterfly lighting, centered key, clean cheek shadows';
+          if (idRaw.includes('clamshell')) return 'Clamshell lighting, soft top key + fill, beauty look';
+          if (idRaw.includes('rim') || idRaw.includes('backlit')) return 'Rim/back light, strong separation, controlled flare';
+          if (idRaw.includes('high-key')) return 'High-key lighting, low contrast, clean bright background';
+          if (idRaw.includes('low-key') || idRaw.includes('noir') || idRaw.includes('chiaroscuro')) return 'Low-key lighting, deep shadows, high contrast';
+          if (idRaw.includes('golden-hour')) return 'Golden hour sunlight, warm bounce, soft long shadows';
+          if (idRaw.includes('blue-hour')) return 'Blue hour ambience, cool fill, balanced highlights';
+          if (idRaw.includes('neon')) return 'Neon practical lights, colored rim, night mood';
+          if (idRaw.includes('cinematic')) return 'Cinematic key light, motivated sources, atmospheric depth';
+          return 'clear key/fill separation, readable shadows';
+        })();
+
+        const colorTone = (() => {
+          if (idRaw.includes('noir') || idRaw.includes('chiaroscuro')) return 'monochrome or desaturated grade';
+          if (idRaw.includes('film')) return 'film-like grain and subtle halation';
+          if (idRaw.includes('neon')) return 'vibrant colored highlights with controlled blacks';
+          if (idRaw.includes('golden-hour')) return 'warm grade with soft roll-off';
+          if (idRaw.includes('blue-hour')) return 'cool grade with gentle contrast';
+          return 'balanced color grade';
+        })();
+
+        return `Signature photograph reference for ${title}. ${subject} in a realistic scene, ${camera}. ${lighting}. ${colorTone}.`;
       }
       if (directoryMode === 'palette') {
         const hex = (Array.isArray(style?.colors) ? style.colors : [])
@@ -1091,10 +1729,64 @@
         const presetKey = loadPromptPresetKey();
         const presetMeta = promptPresetsForDirectory('palette').find((p) => p.key === presetKey);
         const presetLine = presetMeta?.token ? ` ${presetMeta.token}` : '';
-        return `Signature image showcasing the ${title} color palette${withTags}.${hexLine}${catLine}${presetLine}`.trim();
+        const lead = (() => {
+          if (cat === 'film') return `Cinematic color grade palette for ${title}.`;
+          if (cat === 'era') return `Era-inspired color palette for ${title}.`;
+          if (cat === 'mood') return `Mood-driven palette expressing ${title}.`;
+          if (cat === 'brand') return `Brand color system inspired by ${title}.`;
+          if (cat === 'material') return `Material-inspired palette for ${title}.`;
+          if (cat === 'lighting') return `Lighting-inspired palette for ${title}.`;
+          if (cat === 'season') return `Seasonal palette for ${title}.`;
+          if (cat === 'place') return `Place-inspired palette for ${title}.`;
+          if (cat === 'use') return `Practical UI-ready palette for ${title}.`;
+          if (cat === 'theory') return `Color harmony study palette for ${title}.`;
+          return `Color palette for ${title}.`;
+        })();
+        const tagsHint = withTags ? ` Keywords: ${tagPhrase}.` : '';
+        return `${lead}${tagsHint}${hexLine}${catLine}${presetLine}`.trim();
       }
       if (directoryMode === 'pose') {
-        return `Signature pose reference image of ${title}${withTags}. Clear silhouette, strong line of action, balanced weight, and an instantly readable gesture.`;
+        const type = String(style?.poseType || style?.id || '').toLowerCase();
+        const variant = poseVariantKey(style);
+        const typeHint = (() => {
+          if (type.includes('walking')) return 'weight shift, heel-to-toe step, natural arm swing';
+          if (type.includes('running')) return 'forward lean, long stride, dynamic arm drive';
+          if (type.includes('jump')) return 'airborne moment, strong arc, stretched limbs';
+          if (type.includes('sitting')) return 'grounded hips, relaxed spine, clear leg placement';
+          if (type.includes('crouch')) return 'compressed posture, low center of gravity, tension in legs';
+          if (type.includes('kneel')) return 'one knee grounded, stable balance, readable torso angle';
+          if (type.includes('lying')) return 'clear torso twist, readable limb overlap, comfortable weight';
+          if (type.includes('climb')) return 'reaching grip, pulled body weight, engaged shoulders';
+          if (type.includes('dance')) return 'flowing rhythm, expressive arms, dynamic line of action';
+          if (type.includes('fight') || type.includes('punch') || type.includes('kick')) return 'impact-ready stance, guarded torso, explosive limb action';
+          if (type.includes('aim')) return 'focused aiming line, stable stance, clear arm extension';
+          if (type.includes('hold') || type.includes('carry')) return 'supported weight, believable grip, balanced stance';
+          if (type.includes('throw')) return 'wind-up to release, torso twist, follow-through';
+          if (type.includes('stretch')) return 'extended limbs, clean silhouette, controlled tension';
+          if (type.includes('gesture')) return 'expressive hands, readable body language, clear intent';
+          if (type.includes('turn')) return 'head/shoulder turn, weight shift, readable twist';
+          if (type.includes('reach')) return 'extended arm line, body lean, stable base';
+          if (type.includes('push') || type.includes('pull')) return 'opposing forces, planted feet, engaged core';
+          if (type.includes('point')) return 'clear pointing line, supportive posture, readable direction';
+          if (type.includes('fall')) return 'loss of balance, dynamic tilt, believable collapse';
+          return 'readable body mechanics, clear pose intent';
+        })();
+
+        const viewHint = (() => {
+          if (variant === 'front') return 'front view, symmetrical reference cues';
+          if (variant === 'side') return 'side view, clear spine curve and leg angles';
+          if (variant === 'back') return 'back view, shoulder/hip rotation visible';
+          if (variant === '3-4') return 'three-quarter view, depth in shoulders and pelvis';
+          if (variant === 'dynamic') return 'dynamic camera, strong action line';
+          if (variant === 'silhouette') return 'clean silhouette readability';
+          if (variant === 'foreshortening') return 'strong foreshortening, bold perspective overlap';
+          if (variant === 'low-angle') return 'low angle camera, heroic proportions';
+          if (variant === 'high-angle') return 'high angle camera, compressed depth';
+          if (variant === 'key-pose') return 'iconic key pose, clear staging';
+          return 'neutral camera, clear anatomy landmarks';
+        })();
+
+        return `Pose reference image for ${title}. Single figure full body, ${viewHint}. ${typeHint}.`;
       }
       return `Signature image that represents ${title}${withTags}.`;
     })();
@@ -1221,6 +1913,8 @@
     return (a.en || '').localeCompare(b.en || '', 'en');
   }
   function deriveTags(style) {
+    if (directoryMode === 'character') return deriveCharacterTags(style);
+    if (directoryMode === 'palette') return derivePaletteTags(style);
     const rawText = `${style.en} ${style.ko} ${style.id}`.toLowerCase();
     const tokens = rawText
       .replace(/[^a-z0-9\s-]/g, ' ')
@@ -1244,6 +1938,96 @@
       }
     }
     return out.slice(0, 3);
+  }
+
+  function deriveCharacterTags(style) {
+    const raw = `${style.id || ''} ${style.en || ''} ${style.ko || ''}`.toLowerCase();
+    const has = (re) => re.test(raw);
+
+    const medium = (() => {
+      if (has(/\b(8bit|16bit|pixel|sprite|voxel)\b/)) return 'pixel';
+      if (has(/\b(3d|cgi|render|pbr|realistic|realism|lowpoly|low-poly|clay|toon)\b/)) return '3d';
+      return '2d';
+    })();
+
+    const styleTag = (() => {
+      if (has(/\b(chibi)\b/) || has(/치비/)) return 'chibi';
+      if (has(/\b(anime)\b/) || has(/애니/)) return 'anime';
+      if (has(/\b(manga|manhwa)\b/) || has(/만화/)) return 'manga';
+      if (has(/\b(pixel)\b/) || has(/\b(8bit|16bit)\b/)) return 'pixel-art';
+      if (has(/\b(lowpoly|low-poly)\b/)) return 'lowpoly';
+      if (has(/\b(realistic|realism)\b/)) return 'realistic';
+      if (has(/\b(toon|cartoon)\b/) || has(/카툰/)) return 'toon';
+      if (has(/\b(cel)\b/) || has(/셀/)) return 'cel-shading';
+      if (has(/\b(lineart|ink)\b/) || has(/잉크/)) return 'ink-line';
+      if (has(/\b(watercolor)\b/) || has(/수채/)) return 'watercolor';
+      if (has(/\b(vector)\b/)) return 'vector';
+      if (has(/\b(stylized)\b/) || has(/스타일/)) return 'stylized';
+      return medium === '3d' ? 'stylized' : 'illustration';
+    })();
+
+    const useTag = (() => {
+      if (has(/\b(turnaround|sheet)\b/) || has(/시트|턴어라운드/)) return 'turnaround';
+      if (has(/\b(mascot)\b/) || has(/마스코트/)) return 'mascot';
+      if (has(/\b(game)\b/) || has(/게임/)) return 'game';
+      if (has(/\b(concept)\b/)) return 'concept';
+      return 'character';
+    })();
+
+    const out = [medium, styleTag, useTag].filter(Boolean);
+    const uniqOut = [];
+    out.forEach((t) => { if (!uniqOut.includes(t)) uniqOut.push(t); });
+    return uniqOut.slice(0, 3);
+  }
+
+  function derivePaletteTags(style) {
+    const raw = `${style.id || ''} ${style.en || ''} ${style.ko || ''}`.toLowerCase();
+    const has = (re) => re.test(raw);
+    const cat = paletteCategoryKey(style);
+
+    const tone = (() => {
+      if (has(/\b(monochrome|mono)\b/) || has(/모노|단색/)) return 'monochrome';
+      if (has(/\b(pastel)\b/) || has(/파스텔/)) return 'pastel';
+      if (has(/\b(muted)\b/) || has(/뮤트|저채도/)) return 'muted';
+      if (has(/\b(neon)\b/) || has(/네온/)) return 'neon';
+      if (has(/\b(vivid)\b/) || has(/비비드/)) return 'vivid';
+      if (has(/\b(earth|earthy)\b/) || has(/어스|내추럴/)) return 'earthy';
+      if (has(/\b(warm)\b/) || has(/웜/)) return 'warm';
+      if (has(/\b(cool)\b/) || has(/쿨/)) return 'cool';
+      if (has(/\b(dark)\b/) || has(/다크/)) return 'dark';
+      return (cat === 'film') ? 'cinematic' : (cat === 'use' ? 'ui' : 'balanced');
+    })();
+
+    const use = (() => {
+      if (cat === 'brand') return 'brand';
+      if (cat === 'use') return 'ui';
+      if (cat === 'film') return 'cinematic';
+      if (cat === 'lighting') return 'photo';
+      if (cat === 'material') return 'material';
+      if (cat === 'place') return 'place';
+      if (cat === 'season') return 'seasonal';
+      if (cat === 'theory') return 'harmony';
+      if (cat === 'era') return 'era';
+      if (cat === 'mood') return 'mood';
+      return 'palette';
+    })();
+
+    const theme = (() => {
+      if (has(/\b(kids|kid)\b/) || has(/키즈/)) return 'kids';
+      if (has(/\b(lux|luxe|luxury)\b/) || has(/럭셔리/)) return 'luxe';
+      if (has(/\b(eco|nature|organic)\b/) || has(/에코|네이처/)) return 'eco';
+      if (has(/\b(cyber|cyberpunk)\b/) || has(/사이버/)) return 'cyberpunk';
+      if (has(/\b(wes)\b/) || has(/웨스/)) return 'whimsical';
+      if (has(/\b(matrix)\b/) || has(/매트릭/)) return 'matrix';
+      if (has(/\b(blade)\b/) || has(/블레이드/)) return 'neo-noir';
+      if (has(/\b(holiday|christmas)\b/) || has(/홀리데이/)) return 'holiday';
+      return (cat === 'mood') ? 'atmosphere' : 'concept';
+    })();
+
+    const out = [tone, use, theme].filter(Boolean);
+    const uniqOut = [];
+    out.forEach((t) => { if (!uniqOut.includes(t)) uniqOut.push(t); });
+    return uniqOut.slice(0, 3);
   }
 
   function buildOverview(style) {
@@ -1375,7 +2159,10 @@
     const figures = s.figures || KEY_FIGURES[s.id] || [];
     const characteristics = s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' '));
     const q = s.q || buildQuery(s);
-    return { ...s, tags, overview, figures, characteristics, q, poseType: s.poseType };
+    const colors = (directoryMode === 'palette' && Array.isArray(s.colors))
+      ? normalizePaletteColors(s.colors)
+      : s.colors;
+    return { ...s, tags, overview, figures, characteristics, q, poseType: s.poseType, colors };
   }
 
   function loadStyles() {
@@ -1505,6 +2292,19 @@
     return true;
   }
 
+  function matchesCharacterQuickFilters(style) {
+    if (directoryMode !== 'character') return true;
+    if (!activeCharacterFacet) return true;
+    const tags = new Set((style.tags || []).map((t) => String(t || '').toLowerCase()));
+    const facet = String(activeCharacterFacet || '').toLowerCase();
+    if (facet === '2d') return tags.has('2d');
+    if (facet === '3d') return tags.has('3d');
+    if (facet === 'pixel') return tags.has('pixel') || tags.has('pixel-art');
+    if (facet === 'realistic') return tags.has('realistic') || normalize(style.en).includes('realistic');
+    if (facet === 'toon') return tags.has('toon') || tags.has('cel-shading');
+    return true;
+  }
+
   const PALETTE_CATEGORY_ORDER = [
     { key: 'film', label: '영화/시네마 (Film)' },
     { key: 'era', label: '연도/시대 (Era)' },
@@ -1568,6 +2368,7 @@
       if (dom.poseVariantJump) dom.poseVariantJump.hidden = false;
       if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = true;
       if (dom.palettePresetJump) dom.palettePresetJump.hidden = true;
+      if (dom.characterFacetJump) dom.characterFacetJump.hidden = true;
       if (dom.poseTypeJump) dom.poseTypeJump.innerHTML = '';
       if (dom.poseVariantJump) dom.poseVariantJump.innerHTML = '';
 
@@ -1605,6 +2406,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = `jump ${isActive ? 'active' : ''}`.trim();
+        updateAriaRadio(b, isActive);
         const label = document.createElement('span');
         label.className = 'jump-label';
         label.textContent = labelText;
@@ -1614,11 +2416,14 @@
         b.appendChild(label);
         b.appendChild(badge);
         if (count === 0) b.disabled = true;
+        b.setAttribute('aria-label', `${labelText} (${count})`);
         b.addEventListener('click', onClick);
         rowEl.appendChild(b);
       };
 
       if (dom.poseTypeJump) {
+        dom.poseTypeJump.setAttribute('role', 'radiogroup');
+        dom.poseTypeJump.setAttribute('aria-label', 'Pose type');
         mk(dom.poseTypeJump, '전체 (All)', total, !activePoseType && !activePoseVariant, () => {
           activePoseType = '';
           activePoseVariant = '';
@@ -1636,6 +2441,8 @@
       }
 
       if (dom.poseVariantJump) {
+        dom.poseVariantJump.setAttribute('role', 'radiogroup');
+        dom.poseVariantJump.setAttribute('aria-label', 'Pose variant');
         mk(dom.poseVariantJump, '전체 (All)', total, !activePoseVariant, () => {
           activePoseVariant = '';
           buildJumpBars();
@@ -1660,8 +2467,10 @@
       if (dom.poseVariantJump) dom.poseVariantJump.hidden = true;
       if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = false;
       if (dom.palettePresetJump) dom.palettePresetJump.hidden = false;
+      if (dom.characterFacetJump) dom.characterFacetJump.hidden = true;
       if (dom.paletteCategoryJump) dom.paletteCategoryJump.innerHTML = '';
       if (dom.palettePresetJump) dom.palettePresetJump.innerHTML = '';
+      palettePresetExpanded = false;
 
       const base = STYLES.filter((s) => matchesScope(s, query)).filter(matchesTag);
       const total = base.length;
@@ -1689,6 +2498,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = `jump ${isActive ? 'active' : ''}`.trim();
+        updateAriaRadio(b, isActive);
         const label = document.createElement('span');
         label.className = 'jump-label';
         label.textContent = labelText;
@@ -1698,11 +2508,14 @@
         b.appendChild(label);
         b.appendChild(badge);
         if (count === 0) b.disabled = true;
+        b.setAttribute('aria-label', `${labelText} (${count})`);
         b.addEventListener('click', onClick);
         rowEl.appendChild(b);
       };
 
       if (dom.paletteCategoryJump) {
+        dom.paletteCategoryJump.setAttribute('role', 'radiogroup');
+        dom.paletteCategoryJump.setAttribute('aria-label', 'Palette categories');
         mk(dom.paletteCategoryJump, '전체 (All)', total, !activePaletteCategory && !activePalettePreset, () => {
           activePaletteCategory = '';
           activePalettePreset = '';
@@ -1721,12 +2534,21 @@
       }
 
       if (dom.palettePresetJump) {
+        dom.palettePresetJump.setAttribute('role', 'radiogroup');
+        dom.palettePresetJump.setAttribute('aria-label', 'Palette presets');
         mk(dom.palettePresetJump, '전체 (All)', activePaletteCategory ? (catCounts.get(activePaletteCategory) || 0) : total, !activePalettePreset, () => {
           activePalettePreset = '';
           buildJumpBars();
           render();
         });
-        [...presetCounts.keys()].sort().forEach((k) => {
+        const keysSorted = [...presetCounts.keys()].sort();
+        const limit = 10;
+        const showAll = palettePresetExpanded || keysSorted.length <= limit;
+        const visibleKeys = showAll ? keysSorted : keysSorted.slice(0, limit);
+        if (!showAll && activePalettePreset && !visibleKeys.includes(activePalettePreset) && keysSorted.includes(activePalettePreset)) {
+          visibleKeys.push(activePalettePreset);
+        }
+        visibleKeys.forEach((k) => {
           const c = presetCounts.get(k) || 0;
           const label = presetLabels.get(k) || k;
           mk(dom.palettePresetJump, label, c, activePalettePreset === k, () => {
@@ -1735,8 +2557,85 @@
             render();
           });
         });
+        if (keysSorted.length > limit) {
+          const more = document.createElement('button');
+          more.type = 'button';
+          more.className = 'jump more';
+          more.textContent = palettePresetExpanded ? '접기' : '더보기';
+          more.addEventListener('click', () => {
+            palettePresetExpanded = !palettePresetExpanded;
+            buildJumpBars();
+          });
+          dom.palettePresetJump.appendChild(more);
+        }
       }
       return;
+    }
+
+    if (directoryMode === 'character') {
+      if (dom.poseTypeJump) dom.poseTypeJump.hidden = true;
+      if (dom.poseVariantJump) dom.poseVariantJump.hidden = true;
+      if (dom.paletteCategoryJump) dom.paletteCategoryJump.hidden = true;
+      if (dom.palettePresetJump) dom.palettePresetJump.hidden = true;
+      if (dom.enJump) dom.enJump.hidden = false;
+      if (dom.characterFacetJump) dom.characterFacetJump.hidden = false;
+      if (dom.characterFacetJump) dom.characterFacetJump.innerHTML = '';
+
+      const base = STYLES.filter((s) => matchesScope(s, query)).filter(matchesTag);
+      const total = base.length;
+      const counts = new Map();
+      base.forEach((s) => {
+        const tags = new Set((s.tags || []).map((t) => String(t || '').toLowerCase()));
+        const medium = tags.has('pixel') || tags.has('pixel-art') ? 'pixel' : tags.has('3d') ? '3d' : '2d';
+        counts.set(medium, (counts.get(medium) || 0) + 1);
+        if (tags.has('realistic')) counts.set('realistic', (counts.get('realistic') || 0) + 1);
+        if (tags.has('toon') || tags.has('cel-shading')) counts.set('toon', (counts.get('toon') || 0) + 1);
+      });
+
+      const items = [
+        { key: '', label: '전체 (All)', count: total },
+        { key: '2d', label: '2D', count: counts.get('2d') || 0 },
+        { key: '3d', label: '3D', count: counts.get('3d') || 0 },
+        { key: 'pixel', label: 'Pixel', count: counts.get('pixel') || 0 },
+        { key: 'realistic', label: 'Realistic', count: counts.get('realistic') || 0 },
+        { key: 'toon', label: 'Toon', count: counts.get('toon') || 0 }
+      ];
+
+      if (dom.characterFacetJump) {
+        dom.characterFacetJump.setAttribute('role', 'radiogroup');
+        dom.characterFacetJump.setAttribute('aria-label', 'Character quick filters');
+        items.forEach((m) => {
+          const isActive = activeCharacterFacet === m.key;
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = `jump ${isActive ? 'active' : ''}`.trim();
+          updateAriaRadio(b, isActive);
+          const label = document.createElement('span');
+          label.className = 'jump-label';
+          label.textContent = m.label;
+          const badge = document.createElement('span');
+          badge.className = 'jump-count';
+          badge.textContent = String(m.count);
+          b.appendChild(label);
+          b.appendChild(badge);
+          if (m.key && m.count === 0) b.disabled = true;
+          b.setAttribute('aria-label', `${m.label} (${m.count})`);
+          b.addEventListener('click', () => {
+            activeCharacterFacet = (activeCharacterFacet === m.key) ? '' : m.key;
+            buildJumpBars();
+            render();
+          });
+          dom.characterFacetJump.appendChild(b);
+        });
+      }
+
+      // keep A-Z jump row for character
+      if (dom.enJump) dom.enJump.hidden = false;
+      updateJumpReset();
+      // fallthrough: build enJump below
+    } else {
+      if (dom.characterFacetJump) dom.characterFacetJump.hidden = true;
+      if (dom.characterFacetJump) dom.characterFacetJump.innerHTML = '';
     }
 
     if (dom.enJump) dom.enJump.hidden = false;
@@ -1747,6 +2646,8 @@
 
     const letters = ['All', ...'0123456789'.split(''), ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
     dom.enJump.innerHTML = '';
+    dom.enJump.setAttribute('role', 'radiogroup');
+    dom.enJump.setAttribute('aria-label', 'Initial filters');
 
     const base = STYLES.filter((s) => matchesScope(s, query)).filter(matchesTag);
     const total = base.length;
@@ -1774,6 +2675,7 @@
         (isDigit && activeDigitInitial === ch) ||
         (!isDigit && ch !== 'All' && activeEnInitial === ch);
       b.className = `jump ${isActive ? 'active' : ''}`.trim();
+      updateAriaRadio(b, isActive);
       const count = ch === 'All' ? total : (isDigit ? (digitCounts.get(ch) || 0) : (letterCounts.get(ch) || 0));
       const label = document.createElement('span');
       label.className = 'jump-label';
@@ -1801,6 +2703,7 @@
       });
       dom.enJump.appendChild(b);
     });
+    updateJumpReset();
   }
 
   function clearAllFilters() {
@@ -1815,6 +2718,7 @@
     clearShuffle({ persist: true });
     if (dom.search) dom.search.value = '';
     buildJumpBars();
+    updateJumpReset();
     render();
   }
 
@@ -1917,6 +2821,14 @@
         const label = example ? palettePresetLabel(example) : activePalettePreset;
         add(`세부: ${label}`, () => { activePalettePreset = ''; buildJumpBars(); render(); });
       }
+    } else if (directoryMode === 'character') {
+      if (activeCharacterFacet) {
+        const map = { '2d': '2D', '3d': '3D', pixel: 'Pixel', realistic: 'Realistic', toon: 'Toon' };
+        const label = map[String(activeCharacterFacet).toLowerCase()] || activeCharacterFacet;
+        add(`필터: ${label}`, () => { activeCharacterFacet = ''; buildJumpBars(); render(); });
+      }
+      if (activeDigitInitial) add(`숫자: ${activeDigitInitial}`, () => { activeDigitInitial = ''; buildJumpBars(); render(); });
+      if (activeEnInitial) add(`A-Z: ${activeEnInitial}`, () => { activeEnInitial = ''; buildJumpBars(); render(); });
     } else {
       if (activeDigitInitial) add(`숫자: ${activeDigitInitial}`, () => { activeDigitInitial = ''; buildJumpBars(); render(); });
       if (activeEnInitial) add(`A-Z: ${activeEnInitial}`, () => { activeEnInitial = ''; buildJumpBars(); render(); });
@@ -1928,12 +2840,15 @@
       ? Boolean(query || activeTag || activePoseType || activePoseVariant)
       : (directoryMode === 'palette')
         ? Boolean(query || activeTag || activePaletteCategory || activePalettePreset)
-      : Boolean(query || activeTag || activeEnInitial || activeDigitInitial);
+      : (directoryMode === 'character')
+        ? Boolean(query || activeTag || activeEnInitial || activeDigitInitial || activeCharacterFacet)
+        : Boolean(query || activeTag || activeEnInitial || activeDigitInitial);
     if (hasAny) add('모두 초기화', clearAllFilters, 'danger');
   }
 
   function render() {
     buildJumpBars();
+    updateJumpReset();
     if (!STYLES.length) {
       loadStyles();
     }
@@ -1942,12 +2857,17 @@
       dom.activeTag.textContent = '';
       dom.grid.innerHTML = '<div class="empty-state">`styles-data.js` 로드 실패 또는 데이터 0개입니다. 브라우저 콘솔(F12)에서 네트워크/에러를 확인해주세요.</div>';
       updateStyleGuideStep();
+      currentItems = [];
+      renderedCount = 0;
+      syncLoadMore();
+      updateGridMeta({ visible: 0, total: 0, filtered: false, shown: 0 });
       return;
     }
     let items = STYLES
       .filter((s) => matchesScope(s, query))
       .filter(matchesInitials)
       .filter(matchesPoseQuickFilters)
+      .filter(matchesCharacterQuickFilters)
       .filter(matchesPaletteQuickFilters)
       .filter(matchesTag);
     if (shuffleState && shuffleState.directory === directoryMode && Array.isArray(shuffleState.order) && shuffleState.order.length) {
@@ -1956,12 +2876,19 @@
     } else {
       items = sortItems(items);
     }
-    dom.count.textContent = `결과: ${items.length}개${shuffleState && shuffleState.directory === directoryMode ? ' · 카드섞기' : ''}`;
+    const shuffled = Boolean(shuffleState && shuffleState.directory === directoryMode);
+    const hasAny = (directoryMode === 'pose')
+      ? Boolean(query || activeTag || activePoseType || activePoseVariant || shuffled)
+      : (directoryMode === 'palette')
+        ? Boolean(query || activeTag || activePaletteCategory || activePalettePreset || shuffled)
+        : Boolean(query || activeTag || activeEnInitial || activeDigitInitial || (directoryMode === 'character' && activeCharacterFacet) || shuffled);
     dom.activeTag.textContent = activeTag ? `태그: ${activeTag}` : '';
     renderActiveChips();
-    dom.grid.innerHTML = '';
+    renderGridTools();
+    updateGridStatusLine();
 
     if (!items.length) {
+      dom.grid.innerHTML = '';
       const wrapper = document.createElement('div');
       wrapper.className = 'empty-state';
       wrapper.textContent = '조건에 맞는 스타일이 없습니다. 필터를 초기화하거나 검색어를 바꿔보세요.';
@@ -1976,108 +2903,26 @@
       wrapper.appendChild(document.createElement('br'));
       wrapper.appendChild(reset);
       dom.grid.appendChild(wrapper);
+
+      currentItems = [];
+      renderedCount = 0;
+      syncLoadMore();
       updateStyleGuideStep();
+      updateGridMeta({ visible: 0, total: STYLES.length, filtered: hasAny, shown: 0 });
       return;
     }
 
-    items.forEach((style) => {
-      const card = document.createElement('div');
-      card.className = `style-card ${selectedStyleId === style.id ? 'selected' : ''}`.trim();
-      card.dataset.id = style.id;
-      card.setAttribute('role', 'button');
-      card.tabIndex = 0;
-      card.title = `${style.ko} / ${style.en}`;
-      card.addEventListener('click', () => selectStyle(style));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          selectStyle(style);
-        }
-      });
+    const sig = filterSignature();
+    const sigChanged = sig !== renderSig;
+    renderSig = sig;
 
-      const img = document.createElement('img');
-      img.loading = 'lazy';
-      img.alt = `${style.ko} 썸네일`;
-      applyThumb(img, style);
-
-      const overlay = document.createElement('div');
-      overlay.className = 'style-overlay';
-
-      const top = document.createElement('div');
-      top.className = 'style-top';
-
-      const title = document.createElement('div');
-      title.className = 'style-title';
-      title.textContent = style.ko;
-      title.style.fontSize = `${fontSizeFor(style.ko, 18, 13, 10)}px`;
-
-      const subtitle = document.createElement('div');
-      subtitle.className = 'style-subtitle';
-      subtitle.textContent = `${style.en}`;
-      subtitle.style.fontSize = `${fontSizeFor(style.en, 14, 11, 18)}px`;
-
-      top.appendChild(title);
-      top.appendChild(subtitle);
-
-      const copyPrompt = document.createElement('button');
-      copyPrompt.type = 'button';
-      copyPrompt.className = 'prompt-copy-icon';
-      copyPrompt.setAttribute('aria-label', '샘플 이미지 프롬프트 복사');
-      copyPrompt.title = '샘플 이미지 프롬프트 복사';
-      copyPrompt.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-  <path d="M8 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="2"/>
-  <path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
-</svg>`;
-      copyPrompt.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const prompt = sampleImagePrompt(style);
-        const ok = await writeClipboard(prompt);
-        if (ok) {
-          showPopup({
-            title: '복사 완료!',
-            desc: '이미지 생성툴에 붙여넣기 → 생성'
-          });
-        }
-      });
-
-      const tags = document.createElement('div');
-      tags.className = 'style-tags';
-      (style.tags || []).slice(0, 3).forEach((t) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = `tag ${activeTag === t ? 'active' : ''}`.trim();
-        b.textContent = `#${t}`;
-        b.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          activeTag = activeTag === t ? '' : t;
-          render();
-        });
-        tags.appendChild(b);
-      });
-
-      overlay.appendChild(copyPrompt);
-      overlay.appendChild(top);
-      overlay.appendChild(tags);
-
-      card.appendChild(img);
-      card.appendChild(overlay);
-
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--mx', `${x}%`);
-        card.style.setProperty('--my', `${y}%`);
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.removeProperty('--mx');
-        card.style.removeProperty('--my');
-      });
-
-      dom.grid.appendChild(card);
-    });
+    if (sigChanged) {
+      resetBatch(items);
+    } else {
+      currentItems = items;
+      syncLoadMore();
+    }
+    updateGridMeta({ visible: items.length, total: STYLES.length, filtered: hasAny, shown: Math.min(renderedCount, items.length) });
 
     updateStyleGuideStep();
   }
@@ -2087,12 +2932,17 @@
       applyTheme(getPreferredTheme());
       applyDirectory(getPreferredDirectory());
       applySite(getPreferredSite());
+      updateAriaRadio(dom.sortKo, sortMode === 'ko');
+      updateAriaRadio(dom.sortEn, sortMode === 'en');
       loadStyles();
       buildJumpBars();
       shuffleState = loadShuffleState();
       if (shuffleState && shuffleState.directory !== directoryMode) shuffleState = null;
       updateShuffleButtons();
       renderPromptPresetChips();
+      if (dom.gridChipsHost && dom.activeChips && dom.activeChips.parentElement !== dom.gridChipsHost) {
+        dom.gridChipsHost.appendChild(dom.activeChips);
+      }
       render();
     } catch (err) {
       console.error(err);
@@ -2101,17 +2951,29 @@
       return;
     }
 
+    const updateClearSearch = () => {
+      if (!dom.clearSearch) return;
+      const has = Boolean(String(dom.search?.value || '').trim());
+      dom.clearSearch.hidden = !has;
+    };
+    updateClearSearch();
+
     dom.search.addEventListener('input', (e) => {
       query = e.target.value;
+      updateClearSearch();
       render();
     });
     if (dom.clearSearch) {
       dom.clearSearch.addEventListener('click', () => {
         query = '';
         dom.search.value = '';
+        updateClearSearch();
         render();
         dom.search.focus();
       });
+    }
+    if (dom.jumpResetBtn) {
+      dom.jumpResetBtn.addEventListener('click', () => clearJumpFilter());
     }
 
     if (dom.manualSearch) {
@@ -2217,18 +3079,22 @@
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) closePanel();
     });
-    closePanel();
+    openPanel({ pin: true });
 
     dom.sortKo.addEventListener('click', () => {
       sortMode = 'ko';
       dom.sortKo.classList.add('active');
       dom.sortEn.classList.remove('active');
+      updateAriaRadio(dom.sortKo, true);
+      updateAriaRadio(dom.sortEn, false);
       render();
     });
     dom.sortEn.addEventListener('click', () => {
       sortMode = 'en';
       dom.sortEn.classList.add('active');
       dom.sortKo.classList.remove('active');
+      updateAriaRadio(dom.sortEn, true);
+      updateAriaRadio(dom.sortKo, false);
       render();
     });
 
