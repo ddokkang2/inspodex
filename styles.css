@@ -2859,6 +2859,70 @@ body.binder-open {
   line-height: 1.65;
   color: var(--muted);
 }
+.binder-compare-card {
+  gap: 14px;
+}
+.binder-compare-title-wrap {
+  display: grid;
+  gap: 4px;
+}
+.binder-compare-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.binder-compare-field {
+  display: grid;
+  gap: 8px;
+}
+.binder-compare-select {
+  width: 100%;
+}
+.binder-compare-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.binder-compare-stat {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+}
+.binder-compare-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.binder-compare-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.binder-compare-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+}
+.binder-compare-panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.binder-compare-panel-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .binder-empty-state {
   display: grid;
   gap: 6px;
@@ -2996,6 +3060,10 @@ body.binder-open {
     grid-template-columns: 1fr;
   }
   .binder-preview-grid {
+    grid-template-columns: 1fr;
+  }
+  .binder-compare-stats,
+  .binder-compare-panels {
     grid-template-columns: 1fr;
   }
   .binder-deck-row {

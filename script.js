@@ -4564,6 +4564,7 @@
   let customCoverHydratePromise = null;
   let activeBinderFilterType = '';
   let activeBinderFilterId = '';
+  let binderCompareDeckId = '';
 
   function referenceKey(styleOrType, maybeId = '') {
     if (typeof styleOrType === 'string') {
@@ -5168,6 +5169,79 @@
     };
   }
 
+  function resolveBinderCompareDeck(primaryDeck) {
+    const candidates = (binderState?.decks || []).filter((deck) => deck.id !== primaryDeck?.id);
+    if (!candidates.length) {
+      binderCompareDeckId = '';
+      return null;
+    }
+    const matched = candidates.find((deck) => deck.id === binderCompareDeckId);
+    if (matched) return matched;
+    binderCompareDeckId = candidates[0].id;
+    return candidates[0];
+  }
+
+  function binderUniqueTerms(source = [], target = [], limit = 4) {
+    const targetSet = new Set((target || []).map((value) => String(value || '').trim().toLowerCase()).filter(Boolean));
+    return (source || []).filter((value) => {
+      const key = String(value || '').trim().toLowerCase();
+      return key && !targetSet.has(key);
+    }).slice(0, limit);
+  }
+
+  function deckComparisonBundle(primaryDeck, compareDeck) {
+    if (!primaryDeck || !compareDeck) return null;
+
+    const primary = deckExportBundle(primaryDeck);
+    const compare = deckExportBundle(compareDeck);
+    const primaryKeySet = new Set(primary.styles.map((style) => referenceKey(style)));
+    const compareKeySet = new Set(compare.styles.map((style) => referenceKey(style)));
+
+    const overlapStyles = primary.styles.filter((style) => compareKeySet.has(referenceKey(style)));
+    const primaryOnlyStyles = primary.styles.filter((style) => !compareKeySet.has(referenceKey(style)));
+    const compareOnlyStyles = compare.styles.filter((style) => !primaryKeySet.has(referenceKey(style)));
+    const sharedFocus = primary.focusTerms.filter((term) => {
+      const key = String(term || '').trim().toLowerCase();
+      return key && compare.focusTerms.some((item) => String(item || '').trim().toLowerCase() === key);
+    }).slice(0, 4);
+    const primaryOnlyFocus = binderUniqueTerms(primary.focusTerms, compare.focusTerms, 4);
+    const compareOnlyFocus = binderUniqueTerms(compare.focusTerms, primary.focusTerms, 4);
+    const sharedLabels = overlapStyles.slice(0, 3).map((style) => binderStyleLabel(style));
+    if (overlapStyles.length > 3) sharedLabels.push(`외 ${overlapStyles.length - 3}개`);
+
+    const recommendation = (() => {
+      if (!overlapStyles.length) return '두 보드가 거의 겹치지 않아 A/B 방향 테스트나 고객 취향 분기용으로 좋습니다.';
+      if (!primaryOnlyStyles.length || !compareOnlyStyles.length) return '두 보드가 매우 가까워서 하나의 방향으로 합치거나 카드만 정리해도 충분합니다.';
+      return '겹치는 기반 위에 차별 포인트가 분명해 버전 분화와 프레젠테이션 비교에 적합합니다.';
+    })();
+
+    const memo = [
+      `# ${primaryDeck.name} vs ${compareDeck.name}`,
+      `공통 카드: ${overlapStyles.length}`,
+      `${primaryDeck.name}만: ${primaryOnlyStyles.length}`,
+      `${compareDeck.name}만: ${compareOnlyStyles.length}`,
+      sharedLabels.length ? `겹치는 레퍼런스: ${sharedLabels.join(', ')}` : '겹치는 레퍼런스: 없음',
+      sharedFocus.length ? `공통 키워드: ${sharedFocus.join(', ')}` : '공통 키워드: 거의 없음',
+      primaryOnlyFocus.length ? `${primaryDeck.name} 고유 키워드: ${primaryOnlyFocus.join(', ')}` : `${primaryDeck.name} 고유 키워드: 없음`,
+      compareOnlyFocus.length ? `${compareDeck.name} 고유 키워드: ${compareOnlyFocus.join(', ')}` : `${compareDeck.name} 고유 키워드: 없음`,
+      `추천: ${recommendation}`
+    ].join('\n');
+
+    return {
+      primary,
+      compare,
+      overlapStyles,
+      primaryOnlyStyles,
+      compareOnlyStyles,
+      sharedFocus,
+      primaryOnlyFocus,
+      compareOnlyFocus,
+      recommendation,
+      memo,
+      memoPreview: binderPreviewText(memo, 220)
+    };
+  }
+
   function renderBinderWorkspace() {
     if (!dom.binderWorkspace) return;
     dom.binderWorkspace.innerHTML = '';
@@ -5375,6 +5449,170 @@
     });
 
     dom.binderWorkspace.appendChild(exportGrid);
+
+    const compareCard = document.createElement('article');
+    compareCard.className = 'binder-export-card binder-compare-card';
+
+    const compareDeck = resolveBinderCompareDeck(deck);
+    if (!compareDeck) {
+      compareCard.innerHTML = `
+        <div class="binder-export-head">
+          <h4 class="binder-export-title">보드 비교</h4>
+        </div>
+        <div class="binder-empty-state compact">
+          <strong>비교할 보드가 아직 없습니다.</strong>
+          <span>보드를 하나 더 만들면 방향 A/B를 나란히 보고 비교 메모까지 바로 복사할 수 있습니다.</span>
+        </div>
+      `;
+      dom.binderWorkspace.appendChild(compareCard);
+      return;
+    }
+
+    const comparison = deckComparisonBundle(deck, compareDeck);
+    if (!comparison) {
+      dom.binderWorkspace.appendChild(compareCard);
+      return;
+    }
+
+    const compareHead = document.createElement('div');
+    compareHead.className = 'binder-export-head';
+
+    const compareTitleWrap = document.createElement('div');
+    compareTitleWrap.className = 'binder-compare-title-wrap';
+
+    const compareTitle = document.createElement('h4');
+    compareTitle.className = 'binder-export-title';
+    compareTitle.textContent = '보드 비교';
+    compareTitleWrap.appendChild(compareTitle);
+
+    const compareMeta = document.createElement('p');
+    compareMeta.className = 'binder-compare-meta';
+    compareMeta.textContent = `${deck.name} vs ${compareDeck.name}`;
+    compareTitleWrap.appendChild(compareMeta);
+    compareHead.appendChild(compareTitleWrap);
+
+    const copyCompareBtn = document.createElement('button');
+    copyCompareBtn.type = 'button';
+    copyCompareBtn.className = 'binder-export-copy';
+    copyCompareBtn.textContent = '비교 메모 복사';
+    copyCompareBtn.addEventListener('click', async () => {
+      await writeClipboard(comparison.memo);
+      showToast('비교 메모를 복사했습니다.');
+    });
+    compareHead.appendChild(copyCompareBtn);
+    compareCard.appendChild(compareHead);
+
+    const compareField = document.createElement('label');
+    compareField.className = 'binder-compare-field';
+    compareField.innerHTML = '<span class="binder-section-label">비교 대상</span>';
+
+    const compareSelect = document.createElement('select');
+    compareSelect.className = 'site-select binder-compare-select';
+    (binderState?.decks || []).filter((item) => item.id !== deck.id).forEach((item) => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = `${item.name} (${(item.cardIds || []).length})`;
+      if (item.id === compareDeck.id) option.selected = true;
+      compareSelect.appendChild(option);
+    });
+    compareSelect.addEventListener('change', () => {
+      binderCompareDeckId = compareSelect.value;
+      renderBinderPanel();
+    });
+    compareField.appendChild(compareSelect);
+    compareCard.appendChild(compareField);
+
+    const compareStats = document.createElement('div');
+    compareStats.className = 'binder-compare-stats';
+    [
+      ['공통 카드', comparison.overlapStyles.length],
+      [`${deck.name}만`, comparison.primaryOnlyStyles.length],
+      [`${compareDeck.name}만`, comparison.compareOnlyStyles.length]
+    ].forEach(([label, value]) => {
+      const stat = document.createElement('article');
+      stat.className = 'binder-compare-stat';
+      const statValue = document.createElement('div');
+      statValue.className = 'binder-stat-value';
+      statValue.textContent = String(value);
+      stat.appendChild(statValue);
+
+      const statLabel = document.createElement('div');
+      statLabel.className = 'binder-stat-label';
+      statLabel.textContent = label;
+      stat.appendChild(statLabel);
+      compareStats.appendChild(stat);
+    });
+    compareCard.appendChild(compareStats);
+
+    const compareNote = document.createElement('p');
+    compareNote.className = 'binder-compare-note';
+    compareNote.textContent = comparison.memoPreview;
+    compareCard.appendChild(compareNote);
+
+    const comparePanels = document.createElement('div');
+    comparePanels.className = 'binder-compare-panels';
+
+    [
+      {
+        title: deck.name,
+        meta: `${comparison.primary.styles.length}개 카드`,
+        chips: comparison.primaryOnlyFocus.length ? comparison.primaryOnlyFocus : comparison.primary.typeLabels
+      },
+      {
+        title: compareDeck.name,
+        meta: `${comparison.compare.styles.length}개 카드`,
+        chips: comparison.compareOnlyFocus.length ? comparison.compareOnlyFocus : comparison.compare.typeLabels
+      }
+    ].forEach((panel) => {
+      const article = document.createElement('article');
+      article.className = 'binder-compare-panel';
+
+      const title = document.createElement('h5');
+      title.className = 'binder-compare-panel-title';
+      title.textContent = panel.title;
+      article.appendChild(title);
+
+      const meta = document.createElement('p');
+      meta.className = 'binder-compare-panel-meta';
+      meta.textContent = panel.meta;
+      article.appendChild(meta);
+
+      const chips = document.createElement('div');
+      chips.className = 'binder-workspace-chips';
+      (panel.chips.length ? panel.chips : ['고유 포인트 없음']).forEach((chipLabel) => {
+        const chip = document.createElement('span');
+        chip.className = `binder-workspace-chip ${panel.chips.length ? '' : 'empty'}`.trim();
+        chip.textContent = chipLabel;
+        chips.appendChild(chip);
+      });
+      article.appendChild(chips);
+      comparePanels.appendChild(article);
+    });
+
+    compareCard.appendChild(comparePanels);
+
+    if (comparison.sharedFocus.length) {
+      const sharedBlock = document.createElement('div');
+      sharedBlock.className = 'binder-workspace-block';
+
+      const sharedLabel = document.createElement('div');
+      sharedLabel.className = 'binder-section-label';
+      sharedLabel.textContent = '공통 시그널';
+      sharedBlock.appendChild(sharedLabel);
+
+      const sharedChips = document.createElement('div');
+      sharedChips.className = 'binder-workspace-chips';
+      comparison.sharedFocus.forEach((label) => {
+        const chip = document.createElement('span');
+        chip.className = 'binder-workspace-chip';
+        chip.textContent = label;
+        sharedChips.appendChild(chip);
+      });
+      sharedBlock.appendChild(sharedChips);
+      compareCard.appendChild(sharedBlock);
+    }
+
+    dom.binderWorkspace.appendChild(compareCard);
   }
 
   function renderBinderPanel() {
