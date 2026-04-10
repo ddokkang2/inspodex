@@ -2596,7 +2596,7 @@ body.binder-open {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: min(420px, 100vw);
+  width: min(560px, 100vw);
   height: 100%;
   padding: 20px;
   border-left: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
@@ -2654,6 +2654,227 @@ body.binder-open {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+.binder-workspace {
+  display: grid;
+  gap: 12px;
+}
+.binder-workspace-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 16%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface-2) 92%, transparent);
+  box-shadow: var(--shadow-elev);
+}
+.binder-workspace-head {
+  display: grid;
+  gap: 14px;
+}
+.binder-workspace-copy {
+  display: grid;
+  gap: 6px;
+}
+.binder-workspace-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.binder-workspace-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+.binder-workspace-meta {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.binder-workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.binder-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-elev);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 180ms ease;
+}
+.binder-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow: var(--shadow-elev), var(--focus-ring);
+}
+.binder-action-btn.accent {
+  border-color: color-mix(in srgb, var(--accent) 52%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: color-mix(in srgb, var(--accent) 78%, var(--text));
+}
+.binder-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.binder-workspace-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.binder-workspace-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.binder-workspace-chip.empty {
+  color: var(--muted);
+}
+.binder-workspace-block {
+  display: grid;
+  gap: 10px;
+}
+.binder-section-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.binder-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.binder-preview-card {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-elev);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 180ms ease;
+}
+.binder-preview-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: var(--shadow-elev), var(--focus-ring);
+}
+.binder-preview-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+}
+.binder-preview-meta {
+  display: grid;
+  gap: 4px;
+}
+.binder-preview-label {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.binder-preview-type {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.binder-export-grid {
+  display: grid;
+  gap: 10px;
+}
+.binder-export-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: var(--shadow-elev);
+}
+.binder-export-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.binder-export-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.binder-export-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.binder-export-copy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.binder-export-preview {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.binder-empty-state {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed color-mix(in srgb, var(--line) 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.binder-empty-state strong {
+  color: var(--text);
+}
+.binder-empty-state.compact {
+  padding: 14px;
 }
 .binder-collections {
   display: flex;
@@ -2772,6 +2993,9 @@ body.binder-open {
     padding: 16px;
   }
   .binder-panel-summary {
+    grid-template-columns: 1fr;
+  }
+  .binder-preview-grid {
     grid-template-columns: 1fr;
   }
   .binder-deck-row {

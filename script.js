@@ -4985,6 +4985,7 @@
             </div>
           </div>
           <div id="binderSummary" class="binder-panel-summary"></div>
+          <div id="binderWorkspace" class="binder-workspace"></div>
           <div id="binderCollections" class="binder-collections"></div>
         </aside>
       `;
@@ -4994,6 +4995,7 @@
     dom.binderToggle = document.getElementById('binderToggle');
     dom.binderPanel = document.getElementById('binderPanel');
     dom.binderSummary = document.getElementById('binderSummary');
+    dom.binderWorkspace = document.getElementById('binderWorkspace');
     dom.binderCollections = document.getElementById('binderCollections');
     dom.binderCloseBtn = document.getElementById('binderCloseBtn');
     dom.binderCreateDeckBtn = document.getElementById('binderCreateDeckBtn');
@@ -5046,8 +5048,337 @@
     renderBinderPanel();
   }
 
+  function deckStyles(deck) {
+    if (!deck) return [];
+    const referenceMap = new Map(allReferences().map((style) => [referenceKey(style), style]));
+    return (Array.isArray(deck.cardIds) ? deck.cardIds : [])
+      .map((cardId) => referenceMap.get(String(cardId || '').trim()))
+      .filter(Boolean);
+  }
+
+  function binderStyleLabel(style) {
+    const primary = String(style?.ko || style?.en || style?.id || '').trim();
+    const secondary = String(style?.en || '').trim();
+    if (secondary && secondary.toLowerCase() !== primary.toLowerCase()) return `${primary} · ${secondary}`;
+    return primary || 'Untitled';
+  }
+
+  function binderPreviewText(value, max = 180) {
+    const clean = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return '';
+    if (clean.length <= max) return clean;
+    return `${clean.slice(0, max - 1).trim()}…`;
+  }
+
+  function binderDateLabel(value) {
+    const time = Number(value) || 0;
+    if (!time) return '';
+    try {
+      return new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric' }).format(new Date(time));
+    } catch {
+      return '';
+    }
+  }
+
+  function deckExportBundle(deck) {
+    const styles = deckStyles(deck);
+    const typeLabels = uniqueText(styles.map((style) => directoryLabel(styleTypeKey(style)))).slice(0, 4);
+    const typePromptTerms = uniqueText(styles.map((style) => directoryShortLabel(styleTypeKey(style)).toLowerCase())).slice(0, 4);
+    const focusTerms = uniqueText(styles.flatMap((style) => [
+      ...referenceFocusTerms(style, 3),
+      ...(Array.isArray(style.tags) ? style.tags : []),
+      ...(Array.isArray(style.characteristics) ? style.characteristics : []),
+      ...(Array.isArray(style.moods) ? style.moods : []),
+      ...(Array.isArray(style.useCases) ? style.useCases : [])
+    ])).slice(0, 8);
+    const titles = uniqueText(styles.map((style) => String(style?.en || style?.ko || style?.id || '').trim())).slice(0, 5);
+    const cardLabels = styles.slice(0, 5).map((style) => binderStyleLabel(style));
+    if (styles.length > 5) cardLabels.push(`외 ${styles.length - 5}개`);
+
+    const boardSearch = joinTokens([
+      ...titles.slice(0, 2),
+      ...focusTerms.slice(0, 6)
+    ]);
+    const boardPrompt = [
+      `Create a cohesive visual direction board for ${deck?.name || 'this project'}.`,
+      titles.length ? `Blend cues from ${titles.slice(0, 3).join(', ')}.` : '',
+      typePromptTerms.length ? `Keep the result useful across ${typePromptTerms.join(', ')} references.` : '',
+      focusTerms.length ? `Focus on ${focusTerms.slice(0, 6).join(', ')}.` : ''
+    ].filter(Boolean).join(' ');
+
+    const summary = [
+      `# ${deck?.name || '프로젝트 보드'}`,
+      `카드 수: ${styles.length}`,
+      typeLabels.length ? `타입: ${typeLabels.join(', ')}` : '타입: 아직 저장된 카드가 없습니다.',
+      focusTerms.length ? `핵심 키워드: ${focusTerms.slice(0, 6).join(', ')}` : '핵심 키워드: 카드가 쌓이면 자동으로 정리됩니다.',
+      cardLabels.length ? `대표 레퍼런스: ${cardLabels.join(' / ')}` : '대표 레퍼런스: 아직 없음',
+      boardSearch ? `추천 믹스 검색어: ${boardSearch}` : '',
+      boardPrompt ? `추천 믹스 프롬프트: ${boardPrompt}` : ''
+    ].filter(Boolean).join('\n');
+
+    const searchPack = [
+      `# ${deck?.name || '프로젝트 보드'} Search Pack`,
+      `Site: ${(SITES[activeSiteKey] || SITES.pinterest).label}`,
+      boardSearch ? `Board mix: ${boardSearch}` : '',
+      ...styles.slice(0, 6).flatMap((style, index) => {
+        const quick = quickSearchQuery(style, activeSiteKey);
+        const precise = preciseSearchQuery(style, activeSiteKey);
+        return [
+          '',
+          `[${index + 1}] ${binderStyleLabel(style)}`,
+          `quick: ${quick}`,
+          `precise: ${precise}`
+        ];
+      })
+    ].filter(Boolean).join('\n');
+
+    const promptPack = [
+      `# ${deck?.name || '프로젝트 보드'} Prompt Pack`,
+      boardPrompt ? `Board prompt: ${boardPrompt}` : '',
+      ...styles.slice(0, 4).flatMap((style, index) => {
+        const prompts = buildPromptBundle(style);
+        return [
+          '',
+          `[${index + 1}] ${binderStyleLabel(style)}`,
+          `generate: ${prompts.generate}`,
+          `transform: ${prompts.transform}`,
+          `expand: ${prompts.expand}`
+        ];
+      })
+    ].filter(Boolean).join('\n');
+
+    return {
+      styles,
+      typeLabels,
+      focusTerms,
+      boardSearch,
+      boardPrompt,
+      summary,
+      searchPack,
+      promptPack,
+      summaryPreview: binderPreviewText(summary, 220),
+      searchPreview: binderPreviewText([
+        boardSearch ? `Board mix: ${boardSearch}` : '',
+        ...styles.slice(0, 2).map((style) => `${binderStyleLabel(style)} / ${quickSearchQuery(style, activeSiteKey)}`)
+      ].filter(Boolean).join(' '), 220),
+      promptPreview: binderPreviewText([
+        boardPrompt,
+        ...styles.slice(0, 1).map((style) => buildPromptBundle(style).generate)
+      ].filter(Boolean).join(' '), 220)
+    };
+  }
+
+  function renderBinderWorkspace() {
+    if (!dom.binderWorkspace) return;
+    dom.binderWorkspace.innerHTML = '';
+
+    const deck = selectedDeck();
+    if (!deck) {
+      dom.binderWorkspace.innerHTML = `
+        <article class="binder-empty-state">
+          <div class="binder-workspace-kicker">workspace</div>
+          <strong>활성 보드를 찾지 못했습니다.</strong>
+        </article>
+      `;
+      return;
+    }
+
+    const bundle = deckExportBundle(deck);
+    const updatedLabel = binderDateLabel(deck.updatedAt);
+    const activeSiteLabel = (SITES[activeSiteKey] || SITES.pinterest).label;
+
+    const workspaceCard = document.createElement('article');
+    workspaceCard.className = 'binder-workspace-card';
+
+    const head = document.createElement('div');
+    head.className = 'binder-workspace-head';
+
+    const headCopy = document.createElement('div');
+    headCopy.className = 'binder-workspace-copy';
+    const kicker = document.createElement('div');
+    kicker.className = 'binder-workspace-kicker';
+    kicker.textContent = 'active board';
+    headCopy.appendChild(kicker);
+
+    const title = document.createElement('h3');
+    title.className = 'binder-workspace-title';
+    title.textContent = deck.name;
+    headCopy.appendChild(title);
+
+    const meta = document.createElement('p');
+    meta.className = 'binder-workspace-meta';
+    meta.textContent = `${bundle.styles.length}개 카드${updatedLabel ? ` · 최근 수정 ${updatedLabel}` : ''}`;
+    headCopy.appendChild(meta);
+    head.appendChild(headCopy);
+
+    const actions = document.createElement('div');
+    actions.className = 'binder-workspace-actions';
+
+    const createAction = (label, handler, { accent = false, disabled = false } = {}) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `binder-action-btn ${accent ? 'accent' : ''}`.trim();
+      button.textContent = label;
+      button.disabled = disabled;
+      button.addEventListener('click', handler);
+      return button;
+    };
+
+    actions.appendChild(createAction('그리드에서 보기', () => {
+      applyBinderFilter('deck', deck.id);
+      setBinderPanelOpen(false);
+    }, { accent: true, disabled: bundle.styles.length === 0 }));
+
+    actions.appendChild(createAction('보드 요약 복사', async () => {
+      await writeClipboard(bundle.summary);
+      showToast('보드 요약을 복사했습니다.');
+    }, { disabled: bundle.styles.length === 0 }));
+
+    actions.appendChild(createAction(`검색팩 복사 · ${activeSiteLabel}`, async () => {
+      await writeClipboard(bundle.searchPack);
+      showToast('검색팩을 복사했습니다.');
+    }, { disabled: bundle.styles.length === 0 }));
+
+    actions.appendChild(createAction('프롬프트팩 복사', async () => {
+      await writeClipboard(bundle.promptPack);
+      showToast('프롬프트팩을 복사했습니다.');
+    }, { disabled: bundle.styles.length === 0 }));
+
+    head.appendChild(actions);
+    workspaceCard.appendChild(head);
+
+    const chips = document.createElement('div');
+    chips.className = 'binder-workspace-chips';
+    const chipValues = [
+      ...bundle.typeLabels.slice(0, 4),
+      ...bundle.focusTerms.slice(0, Math.max(0, 8 - bundle.typeLabels.length))
+    ];
+    if (chipValues.length) {
+      chipValues.forEach((label) => {
+        const chip = document.createElement('span');
+        chip.className = 'binder-workspace-chip';
+        chip.textContent = label;
+        chips.appendChild(chip);
+      });
+    } else {
+      const chip = document.createElement('span');
+      chip.className = 'binder-workspace-chip empty';
+      chip.textContent = '카드를 저장하면 방향성이 자동으로 정리됩니다';
+      chips.appendChild(chip);
+    }
+    workspaceCard.appendChild(chips);
+
+    const previewSection = document.createElement('div');
+    previewSection.className = 'binder-workspace-block';
+    previewSection.innerHTML = '<div class="binder-section-label">저장된 카드 프리뷰</div>';
+
+    if (bundle.styles.length) {
+      const previewGrid = document.createElement('div');
+      previewGrid.className = 'binder-preview-grid';
+
+      bundle.styles.slice(0, 4).forEach((style) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'binder-preview-card';
+        button.addEventListener('click', () => {
+          applyBinderFilter('deck', deck.id);
+          setBinderPanelOpen(false);
+          selectStyle(style);
+        });
+
+        const img = document.createElement('img');
+        img.className = 'binder-preview-thumb';
+        img.alt = binderStyleLabel(style);
+        applyThumb(img, style);
+        button.appendChild(img);
+
+        const meta = document.createElement('div');
+        meta.className = 'binder-preview-meta';
+
+        const label = document.createElement('div');
+        label.className = 'binder-preview-label';
+        label.textContent = binderStyleLabel(style);
+        meta.appendChild(label);
+
+        const type = document.createElement('div');
+        type.className = 'binder-preview-type';
+        type.textContent = directoryLabel(styleTypeKey(style));
+        meta.appendChild(type);
+
+        button.appendChild(meta);
+        previewGrid.appendChild(button);
+      });
+
+      previewSection.appendChild(previewGrid);
+    } else {
+      const empty = document.createElement('div');
+      empty.className = 'binder-empty-state compact';
+      empty.innerHTML = '<strong>보드가 아직 비어 있습니다.</strong><span>카드를 저장하면 요약, 검색팩, 프롬프트팩이 바로 생성됩니다.</span>';
+      previewSection.appendChild(empty);
+    }
+
+    workspaceCard.appendChild(previewSection);
+    dom.binderWorkspace.appendChild(workspaceCard);
+
+    const exportGrid = document.createElement('div');
+    exportGrid.className = 'binder-export-grid';
+
+    [
+      {
+        title: '보드 요약',
+        preview: bundle.summaryPreview,
+        text: bundle.summary,
+        toast: '보드 요약을 복사했습니다.'
+      },
+      {
+        title: `검색팩 · ${activeSiteLabel}`,
+        preview: bundle.searchPreview,
+        text: bundle.searchPack,
+        toast: '검색팩을 복사했습니다.'
+      },
+      {
+        title: '프롬프트팩',
+        preview: bundle.promptPreview,
+        text: bundle.promptPack,
+        toast: '프롬프트팩을 복사했습니다.'
+      }
+    ].forEach((item) => {
+      const card = document.createElement('article');
+      card.className = 'binder-export-card';
+
+      const cardHead = document.createElement('div');
+      cardHead.className = 'binder-export-head';
+
+      const title = document.createElement('h4');
+      title.className = 'binder-export-title';
+      title.textContent = item.title;
+      cardHead.appendChild(title);
+
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.className = 'binder-export-copy';
+      copyBtn.textContent = '복사';
+      copyBtn.disabled = bundle.styles.length === 0;
+      copyBtn.addEventListener('click', async () => {
+        await writeClipboard(item.text);
+        showToast(item.toast);
+      });
+      cardHead.appendChild(copyBtn);
+
+      const preview = document.createElement('p');
+      preview.className = 'binder-export-preview';
+      preview.textContent = item.preview || '카드를 저장하면 이 영역에 자동으로 제안 내용이 생성됩니다.';
+
+      card.appendChild(cardHead);
+      card.appendChild(preview);
+      exportGrid.appendChild(card);
+    });
+
+    dom.binderWorkspace.appendChild(exportGrid);
+  }
+
   function renderBinderPanel() {
-    if (!dom.binderCollections || !dom.binderSummary) return;
+    if (!dom.binderCollections || !dom.binderSummary || !dom.binderWorkspace) return;
 
     const favorites = binderState?.favorites || [];
     const decks = binderState?.decks || [];
@@ -5067,6 +5398,7 @@
       </article>
     `;
 
+    renderBinderWorkspace();
     dom.binderCollections.innerHTML = '';
 
     const createCollectionButton = (label, count, isActive, onClick) => {
