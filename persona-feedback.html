@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inspodex Persona Feedback Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Inspodex를 다양한 실사용 맥락의 페르소나가 사용해본 뒤 남긴 가설형 피드백을 인포그래픽으로 정리한 검증 보드입니다."
+    />
+    <meta name="author" content="ddokkang" />
+    <link rel="canonical" href="https://inspodex.vercel.app/persona-feedback.html" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+    <meta name="theme-color" content="#0e0f12" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Inspodex Persona Feedback Lab" />
+    <meta
+      property="og:description"
+      content="디자인, 브랜드, 일러스트, AI, 전략, 입문자 페르소나가 써본 Inspodex의 사용자 피드백을 인포그래픽으로 정리한 페이지."
+    />
+    <meta property="og:url" content="https://inspodex.vercel.app/persona-feedback.html" />
+    <meta property="og:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <meta property="og:site_name" content="Inspodex" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Inspodex Persona Feedback Lab" />
+    <meta
+      name="twitter:description"
+      content="개발 중인 Inspodex를 다양한 페르소나가 사용한 상황을 인포그래픽으로 시각화한 피드백 보드."
+    />
+    <meta name="twitter:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="persona-feedback.css" />
+  </head>
+  <body class="feedback-page">
+    <div class="feedback-shell">
+      <header class="feedback-panel lab-hero">
+        <div class="lab-topbar">
+          <a class="pill" href="index.html">Inspodex로 돌아가기</a>
+          <div class="lab-topbar-actions">
+            <span class="lab-badge">persona simulation</span>
+            <label class="theme-picker" aria-label="컬러 테마 선택">
+              <span class="sr-only">테마</span>
+              <select id="themeSelect" class="pill theme-select">
+                <option value="light">주간 (Light)</option>
+                <option value="dark">야간 (Dark)</option>
+                <option value="nord">Nord</option>
+                <option value="dracula">Dracula</option>
+                <option value="solarized-dark">Solarized Dark</option>
+                <option value="solarized-light">Solarized Light</option>
+                <option value="high-contrast">High Contrast</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="lab-hero-grid">
+          <div class="lab-copy">
+            <p class="eyebrow">persona feedback board</p>
+            <h1>Inspodex를 다양한 사용자 맥락으로 검증하는 인포그래픽 보드</h1>
+            <p class="lab-summary">
+              개발 중인 서비스를 실제 사용 상황에 가깝게 상상한 페르소나들이 탐색, 비교, 확장 검색, 재사용까지 경험한 뒤 남길 법한
+              피드백을 구조화했습니다. 실제 인터뷰 전에 무엇을 먼저 개선해야 할지 우선순위를 잡도록 설계한 페이지예요.
+            </p>
+            <div class="hero-pills">
+              <span class="pill primary">6개 페르소나</span>
+              <span class="pill">탐색 속도, 학습성, 재사용성 측정</span>
+              <span class="pill">가설형 인터뷰 보드</span>
+            </div>
+            <div class="hero-note">
+              이 페이지의 코멘트는 실제 인터뷰 로그가 아니라, 현재 기능을 기준으로 구성한 페르소나 시뮬레이션입니다. 추후 실제 사용자
+              테스트 결과로 교체하기 쉽게 데이터 구조를 분리해 두었습니다.
+            </div>
+          </div>
+
+          <div id="heroMetrics" class="hero-metrics" aria-label="Persona overview metrics"></div>
+        </div>
+      </header>
+
+      <section class="insight-ribbon" aria-label="Key takeaways">
+        <article class="feedback-panel ribbon-card">
+          <div class="ribbon-label">핵심 가치</div>
+          <div class="ribbon-title">레퍼런스 탐색에서 외부 확장 검색까지의 속도</div>
+          <p class="ribbon-copy">대부분의 페르소나는 “찾고 나가서 더 깊게 보는 흐름”이 분명하다고 느꼈습니다.</p>
+        </article>
+        <article class="feedback-panel ribbon-card">
+          <div class="ribbon-label">반복 마찰</div>
+          <div class="ribbon-title">처음 온 사람에게는 단계 구분과 용어 설명이 아직 부족함</div>
+          <p class="ribbon-copy">입문자와 클라이언트 공유 상황에서 특히 온보딩과 설명형 UI 수요가 컸습니다.</p>
+        </article>
+        <article class="feedback-panel ribbon-card">
+          <div class="ribbon-label">다음 승부처</div>
+          <div class="ribbon-title">저장, 비교, 공유가 붙으면 개인 도구에서 팀 도구로 확장 가능</div>
+          <p class="ribbon-copy">좋은 검색 허브를 넘어서 큐레이션 작업대가 되려면 보드와 메모 맥락이 필요합니다.</p>
+        </article>
+      </section>
+
+      <main class="feedback-main">
+        <section class="feedback-layout">
+          <div class="feedback-panel selector-panel">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">cohorts</p>
+                <h2>페르소나 셀렉터</h2>
+              </div>
+              <p class="section-copy">역할군을 고르면 지표와 인사이트가 함께 바뀝니다.</p>
+            </div>
+            <div id="segmentFilters" class="segment-filters" aria-label="Persona segments"></div>
+            <div id="personaCards" class="persona-cards" aria-label="Persona cards"></div>
+          </div>
+
+          <aside id="personaSpotlight" class="feedback-panel spotlight-panel" aria-live="polite"></aside>
+        </section>
+
+        <section class="feedback-grid-two">
+          <article class="feedback-panel">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">score map</p>
+                <h2>평균 경험 점수</h2>
+              </div>
+              <p class="section-copy">선택한 페르소나 그룹 기준으로 각 항목의 평균 반응을 보여줍니다.</p>
+            </div>
+            <div id="scoreBars" class="score-bars" aria-label="Average score bars"></div>
+          </article>
+
+          <article class="feedback-panel">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">signals</p>
+                <h2>반복된 긍정 신호와 마찰</h2>
+              </div>
+              <p class="section-copy">여러 페르소나에서 겹치는 피드백을 빈도로 정리했습니다.</p>
+            </div>
+            <div class="signal-columns">
+              <div>
+                <div class="signal-column-title">긍정 신호</div>
+                <div id="positiveSignals" class="signal-list" aria-label="Positive signals"></div>
+              </div>
+              <div>
+                <div class="signal-column-title">마찰 신호</div>
+                <div id="negativeSignals" class="signal-list" aria-label="Negative signals"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="feedback-panel">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">journey heatmap</p>
+              <h2>사용 흐름 히트맵</h2>
+            </div>
+            <p class="section-copy">탐색부터 재사용까지 어느 지점에서 만족도가 높고, 어디서 꺾이는지 단계별로 봅니다.</p>
+          </div>
+          <div id="journeyMatrix" class="journey-matrix" aria-label="Journey heatmap"></div>
+        </section>
+
+        <section class="feedback-panel roadmap-panel">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">roadmap</p>
+              <h2>다음 액션 제안</h2>
+            </div>
+            <p class="section-copy">지금 바로 손댈 것, 제품 가치를 키울 것, 실제 인터뷰에서 확인할 질문을 나눠 정리했습니다.</p>
+          </div>
+          <div id="roadmapColumns" class="roadmap-columns" aria-label="Suggested roadmap"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="persona-feedback.js"></script>
+  </body>
+</html>

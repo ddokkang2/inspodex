@@ -217,14 +217,21 @@ body[data-theme="high-contrast"] {
 
 .hero {
   grid-column: 1 / -1;
-  padding: 20px 20px 18px;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+  gap: 18px;
   align-items: flex-start;
 }
 
-.hero-copy { max-width: 78ch; }
+.hero-copy {
+  max-width: 78ch;
+}
+.hero-side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
 .page-shell > .panel:not(.controls) {
   min-width: 0;
 }
@@ -235,17 +242,201 @@ body[data-theme="high-contrast"] {
   font-size: 12px;
   color: color-mix(in srgb, var(--accent) 86%, var(--muted));
 }
-.hero h1 {
+.hero-product-title {
   margin: 0;
-  font-size: 2.05rem;
-  letter-spacing: -0.03em;
+  max-width: 11ch;
+  font-size: clamp(2.3rem, 4vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
 }
-.hero p {
-  margin: 10px 0 0;
-  line-height: 1.55;
+.hero-lead {
+  max-width: 64ch;
+  margin: 14px 0 0;
+  font-size: 1rem;
+  line-height: 1.7;
   color: var(--muted);
 }
-.hero-actions { display: flex; gap: 10px; align-items: center; }
+.hero-inline-actions,
+.hero-proof-grid,
+.strategy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.hero-inline-actions {
+  margin-top: 18px;
+}
+.hero-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.hero-proof-card,
+.hero-directory-card,
+.strategy-card {
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface-2) 96%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 12%, transparent), transparent 54%);
+  box-shadow: var(--shadow-elev);
+}
+.hero-proof-card {
+  padding: 16px;
+  border-radius: 20px;
+}
+.hero-proof-label,
+.strategy-kicker,
+.hero-directory-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 82%, var(--muted));
+}
+.hero-proof-card strong {
+  display: block;
+  font-size: 1.02rem;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+.hero-proof-card p {
+  margin: 8px 0 0;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.hero-directory-card {
+  padding: 18px;
+  border-radius: 22px;
+}
+.hero-directory-card h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+.hero-directory-card p {
+  margin: 10px 0 0;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.hero-directory-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  color: var(--muted);
+  line-height: 1.6;
+}
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.strategy-panel {
+  grid-column: 1 / -1;
+  padding: 18px;
+}
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.strategy-card {
+  padding: 18px;
+  border-radius: 22px;
+}
+.strategy-card-wide {
+  grid-column: 1 / -1;
+}
+.strategy-card h2 {
+  margin: 0;
+  max-width: 24ch;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+.strategy-copy {
+  max-width: 72ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.strategy-tags {
+  margin-top: 16px;
+}
+.strategy-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.workflow-list,
+.feature-list {
+  display: grid;
+  gap: 12px;
+}
+.workflow-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+.workflow-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: color-mix(in srgb, var(--accent) 88%, var(--text));
+  font-size: 12px;
+  font-weight: 900;
+}
+.workflow-item strong {
+  display: block;
+  letter-spacing: -0.02em;
+}
+.workflow-item p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.feature-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.feature-list li {
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.65;
+}
+.feature-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 80%, white 10%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
 
 .panel { padding: 16px; }
 .panel.controls {
@@ -2018,6 +2209,19 @@ body.detail-open {
   .page-shell {
     grid-template-columns: 1fr;
   }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-product-title {
+    max-width: none;
+  }
+  .hero-proof-grid,
+  .strategy-grid {
+    grid-template-columns: 1fr;
+  }
+  .strategy-card-wide {
+    grid-column: auto;
+  }
   .style-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
   .search-panel { grid-template-columns: 1fr; }
   .panel.controls {
@@ -2040,8 +2244,23 @@ body.detail-open {
 }
 
 @media (max-width: 560px) {
-  .hero { flex-direction: column; }
+  .hero {
+    padding: 18px;
+  }
   input { min-width: 0; }
+  .hero-inline-actions,
+  .hero-actions {
+    align-items: stretch;
+  }
+  .hero-directory-card,
+  .strategy-card,
+  .hero-proof-card {
+    padding: 16px;
+  }
+  .hero-directory-card h2,
+  .strategy-card h2 {
+    font-size: 1.35rem;
+  }
   .style-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .jumpbar-row {
     flex-wrap: wrap;

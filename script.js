@@ -4578,7 +4578,7 @@
   }
 
   function normalizeDeck(deck, index = 0) {
-    const name = String(deck?.name || '').trim() || (index === 0 ? 'My Deck' : `Deck ${index + 1}`);
+    const name = String(deck?.name || '').trim() || (index === 0 ? '내 보드' : `보드 ${index + 1}`);
     const cardIds = uniq((Array.isArray(deck?.cardIds) ? deck.cardIds : []).map((id) => String(id || '').trim()).filter(Boolean));
     return {
       id: String(deck?.id || createDeckId()),
@@ -4592,7 +4592,7 @@
 
   function normalizeBinderState(raw) {
     const decks = (Array.isArray(raw?.decks) ? raw.decks : []).map((deck, index) => normalizeDeck(deck, index));
-    const safeDecks = decks.length ? decks : [normalizeDeck({ name: 'My Deck' }, 0)];
+    const safeDecks = decks.length ? decks : [normalizeDeck({ name: '내 보드' }, 0)];
     const selectedDeckId = safeDecks.some((deck) => deck.id === raw?.selectedDeckId)
       ? String(raw.selectedDeckId)
       : safeDecks[0].id;
@@ -4753,7 +4753,7 @@
       return true;
     } catch (err) {
       console.error(err);
-      if (!silent) showToast('Binder save failed.');
+      if (!silent) showToast('보드 저장에 실패했습니다.');
       return false;
     }
   }
@@ -4783,7 +4783,7 @@
   }
 
   function binderDeckLabel(deckId) {
-    return (binderState?.decks || []).find((deck) => deck.id === deckId)?.name || 'Deck';
+    return (binderState?.decks || []).find((deck) => deck.id === deckId)?.name || '보드';
   }
 
   function isFavoriteStyle(style) {
@@ -4799,7 +4799,7 @@
   function createDeck(name, seedStyle = null) {
     const deck = normalizeDeck({
       id: createDeckId(),
-      name: String(name || '').trim() || `Deck ${(binderState?.decks || []).length + 1}`,
+      name: String(name || '').trim() || `보드 ${(binderState?.decks || []).length + 1}`,
       cardIds: seedStyle ? [referenceKey(seedStyle)] : [],
       coverCardId: seedStyle ? referenceKey(seedStyle) : ''
     }, (binderState?.decks || []).length);
@@ -4812,7 +4812,7 @@
   function renameDeck(deckId) {
     const deck = (binderState?.decks || []).find((item) => item.id === deckId);
     if (!deck) return;
-    const next = window.prompt('Deck name', deck.name);
+    const next = window.prompt('보드 이름', deck.name);
     if (!next) return;
     deck.name = String(next).trim() || deck.name;
     deck.updatedAt = Date.now();
@@ -4821,12 +4821,12 @@
 
   function deleteDeck(deckId) {
     if ((binderState?.decks || []).length <= 1) {
-      showToast('Keep at least one deck.');
+      showToast('보드는 최소 1개 이상 필요합니다.');
       return;
     }
     const deck = (binderState?.decks || []).find((item) => item.id === deckId);
     if (!deck) return;
-    if (!window.confirm(`Delete "${deck.name}"?`)) return;
+    if (!window.confirm(`"${deck.name}" 보드를 삭제할까요?`)) return;
     binderState.decks = binderState.decks.filter((item) => item.id !== deckId);
     if (binderState.selectedDeckId === deckId) {
       binderState.selectedDeckId = binderState.decks[0]?.id || '';
@@ -4934,10 +4934,13 @@
   function syncBinderHeroButton() {
     if (!dom.binderToggle) return;
     const deckCount = (binderState?.decks || []).length;
-    const favoriteCount = (binderState?.favorites || []).length;
-    dom.binderToggle.textContent = `My Binder`;
-    dom.binderToggle.title = `${deckCount} decks · ${favoriteCount} favorites`;
-    dom.binderToggle.dataset.count = String(favoriteCount);
+    const savedCount = new Set([
+      ...(binderState?.favorites || []),
+      ...((binderState?.decks || []).flatMap((deck) => deck.cardIds || []))
+    ]).size;
+    dom.binderToggle.textContent = '프로젝트 보드';
+    dom.binderToggle.title = `보드 ${deckCount}개 · 저장 ${savedCount}개`;
+    dom.binderToggle.dataset.count = String(savedCount);
   }
 
   function applyBinderFilter(type = '', id = '') {
@@ -4972,13 +4975,13 @@
         <aside class="binder-panel-dialog" role="dialog" aria-modal="true" aria-labelledby="binderPanelTitle">
           <div class="binder-panel-head">
             <div>
-              <div class="binder-panel-eyebrow">my binder</div>
-              <h2 id="binderPanelTitle" class="binder-panel-title">Decks & Saved Cards</h2>
+              <div class="binder-panel-eyebrow">project boards</div>
+              <h2 id="binderPanelTitle" class="binder-panel-title">프로젝트 보드</h2>
             </div>
             <div class="binder-panel-head-actions">
-              <button id="binderResetBtn" type="button" class="pill danger">Reset All</button>
-              <button id="binderCreateDeckBtn" type="button" class="pill">New Deck</button>
-              <button id="binderCloseBtn" type="button" class="pill">Close</button>
+              <button id="binderResetBtn" type="button" class="pill danger">전체 초기화</button>
+              <button id="binderCreateDeckBtn" type="button" class="pill">새 보드</button>
+              <button id="binderCloseBtn" type="button" class="pill">닫기</button>
             </div>
           </div>
           <div id="binderSummary" class="binder-panel-summary"></div>
@@ -4995,7 +4998,7 @@
     dom.binderCloseBtn = document.getElementById('binderCloseBtn');
     dom.binderCreateDeckBtn = document.getElementById('binderCreateDeckBtn');
     dom.binderResetBtn = document.getElementById('binderResetBtn');
-    appendHelpIcon(document.getElementById('binderPanelTitle'), '즐겨찾기, 덱, 커스텀 커버를 모아두는 개인 바인더입니다. 프로젝트별로 카드 조합을 저장해둘 수 있어요.');
+    appendHelpIcon(document.getElementById('binderPanelTitle'), '즐겨찾기, 보드, 커스텀 커버를 모아두는 개인 작업 공간입니다. 프로젝트별로 카드 조합을 저장해둘 수 있어요.');
 
     if (dom.binderPanel && !dom.binderPanel.dataset.bound) {
       dom.binderPanel.dataset.bound = 'true';
@@ -5012,7 +5015,7 @@
     if (dom.binderCreateDeckBtn && !dom.binderCreateDeckBtn.dataset.bound) {
       dom.binderCreateDeckBtn.dataset.bound = 'true';
       dom.binderCreateDeckBtn.addEventListener('click', () => {
-        const name = window.prompt('New deck name', `Deck ${(binderState?.decks || []).length + 1}`);
+        const name = window.prompt('새 보드 이름', `보드 ${(binderState?.decks || []).length + 1}`);
         if (!name) return;
         const deck = createDeck(name);
         applyBinderFilter('deck', deck.id);
@@ -5031,6 +5034,14 @@
         }
       });
     }
+    document.querySelectorAll('[data-open-binder="true"]').forEach((button) => {
+      if (!(button instanceof HTMLElement) || button.dataset.boundBinderOpen === 'true') return;
+      button.dataset.boundBinderOpen = 'true';
+      button.addEventListener('click', () => {
+        renderBinderPanel();
+        setBinderPanelOpen(true);
+      });
+    });
     syncBinderHeroButton();
     renderBinderPanel();
   }
@@ -5044,15 +5055,15 @@
     dom.binderSummary.innerHTML = `
       <article class="binder-stat-card">
         <div class="binder-stat-value">${favorites.length}</div>
-        <div class="binder-stat-label">Favorites</div>
+        <div class="binder-stat-label">즐겨찾기</div>
       </article>
       <article class="binder-stat-card">
         <div class="binder-stat-value">${decks.length}</div>
-        <div class="binder-stat-label">Decks</div>
+        <div class="binder-stat-label">보드</div>
       </article>
       <article class="binder-stat-card">
         <div class="binder-stat-value">${Object.keys(binderState?.backgrounds || {}).length}</div>
-        <div class="binder-stat-label">Custom Covers</div>
+        <div class="binder-stat-label">커스텀 커버</div>
       </article>
     `;
 
@@ -5068,12 +5079,12 @@
     };
 
     dom.binderCollections.appendChild(
-      createCollectionButton('All Cards', allReferences().length, !activeBinderFilterType, () => {
+      createCollectionButton('전체 카드', allReferences().length, !activeBinderFilterType, () => {
         applyBinderFilter('', '');
       })
     );
     dom.binderCollections.appendChild(
-      createCollectionButton('Favorites', favorites.length, activeBinderFilterType === 'favorites', () => {
+      createCollectionButton('즐겨찾기', favorites.length, activeBinderFilterType === 'favorites', () => {
         applyBinderFilter('favorites', 'favorites');
       })
     );
@@ -5094,8 +5105,8 @@
       const selectBtn = document.createElement('button');
       selectBtn.type = 'button';
       selectBtn.className = `binder-mini-btn ${binderState.selectedDeckId === deck.id ? 'active' : ''}`.trim();
-      selectBtn.textContent = 'Use';
-      selectBtn.title = 'Use as active deck';
+      selectBtn.textContent = '활성';
+      selectBtn.title = '현재 작업 보드로 사용';
       selectBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         setSelectedDeck(deck.id);
@@ -5110,7 +5121,7 @@
       const renameBtn = document.createElement('button');
       renameBtn.type = 'button';
       renameBtn.className = 'binder-mini-btn';
-      renameBtn.textContent = 'Rename';
+      renameBtn.textContent = '이름 변경';
       renameBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         renameDeck(deck.id);
@@ -5120,7 +5131,7 @@
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
       deleteBtn.className = 'binder-mini-btn danger';
-      deleteBtn.textContent = 'Delete';
+      deleteBtn.textContent = '삭제';
       deleteBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         deleteDeck(deck.id);
@@ -5140,25 +5151,25 @@
     section.id = 'detailBinderSection';
     section.className = 'detail-section detail-binder-section';
     section.innerHTML = `
-      <div class="detail-section-title">Binder</div>
+      <div class="detail-section-title">프로젝트 보드</div>
       <div class="detail-binder-grid">
         <div class="detail-binder-row">
-          <button id="detailFavoriteToggle" type="button" class="detail-copy-btn">Favorite</button>
-          <button id="detailOpenBinder" type="button" class="detail-copy-btn">Open Binder</button>
+          <button id="detailFavoriteToggle" type="button" class="detail-copy-btn">즐겨찾기</button>
+          <button id="detailOpenBinder" type="button" class="detail-copy-btn">보드 열기</button>
         </div>
         <label class="detail-field">
-          <span class="detail-field-label">Active deck</span>
-          <select id="detailDeckSelect" class="site-select" aria-label="Active deck"></select>
+          <span class="detail-field-label">현재 작업 보드</span>
+          <select id="detailDeckSelect" class="site-select" aria-label="현재 작업 보드"></select>
         </label>
         <div class="detail-binder-row">
-          <button id="detailDeckToggle" type="button" class="detail-copy-btn">Add to deck</button>
-          <button id="detailDeckCreate" type="button" class="detail-copy-btn">New deck</button>
-          <button id="detailDeckView" type="button" class="detail-copy-btn">View deck</button>
+          <button id="detailDeckToggle" type="button" class="detail-copy-btn">보드에 저장</button>
+          <button id="detailDeckCreate" type="button" class="detail-copy-btn">새 보드</button>
+          <button id="detailDeckView" type="button" class="detail-copy-btn">현재 보드 보기</button>
         </div>
         <div class="detail-binder-row">
           <input id="detailBgInput" type="file" accept="image/*" hidden />
-          <button id="detailBgUpload" type="button" class="detail-copy-btn">Upload cover</button>
-          <button id="detailBgReset" type="button" class="detail-copy-btn">Reset cover</button>
+          <button id="detailBgUpload" type="button" class="detail-copy-btn">커버 업로드</button>
+          <button id="detailBgReset" type="button" class="detail-copy-btn">커버 초기화</button>
         </div>
         <div id="detailBinderStatus" class="detail-binder-status"></div>
       </div>
@@ -5185,13 +5196,13 @@
     const hasCustomCover = Boolean(customBackgroundFor(style));
 
     if (dom.detailFavoriteToggle) {
-      dom.detailFavoriteToggle.textContent = isFavorite ? 'Favorited' : 'Favorite';
+      dom.detailFavoriteToggle.textContent = isFavorite ? '즐겨찾기됨' : '즐겨찾기';
       dom.detailFavoriteToggle.classList.toggle('active', isFavorite);
       dom.detailFavoriteToggle.onclick = () => {
         const next = toggleFavoriteStyle(style);
         render();
         openDetail(style);
-        showToast(next ? 'Added to favorites.' : 'Removed from favorites.');
+        showToast(next ? '즐겨찾기에 추가했습니다.' : '즐겨찾기에서 제거했습니다.');
       };
     }
 
@@ -5219,7 +5230,7 @@
     }
 
     if (dom.detailDeckToggle) {
-      dom.detailDeckToggle.textContent = isInDeck ? 'Remove from deck' : 'Add to deck';
+      dom.detailDeckToggle.textContent = isInDeck ? '보드에서 제거' : '보드에 저장';
       dom.detailDeckToggle.classList.toggle('active', isInDeck);
       dom.detailDeckToggle.onclick = () => {
         const targetDeck = selectedDeck();
@@ -5227,18 +5238,18 @@
         const added = toggleDeckMembership(style, targetDeck.id);
         render();
         openDetail(style);
-        showToast(added ? `Added to ${targetDeck.name}.` : `Removed from ${targetDeck.name}.`);
+        showToast(added ? `${targetDeck.name}에 저장했습니다.` : `${targetDeck.name}에서 제거했습니다.`);
       };
     }
 
     if (dom.detailDeckCreate) {
       dom.detailDeckCreate.onclick = () => {
-        const name = window.prompt('New deck name', `Deck ${(binderState?.decks || []).length + 1}`);
+        const name = window.prompt('새 보드 이름', `보드 ${(binderState?.decks || []).length + 1}`);
         if (!name) return;
         const deck = createDeck(name, style);
         render();
         openDetail(style);
-        showToast(`Created ${deck.name}.`);
+        showToast(`${deck.name}를 만들었습니다.`);
       };
     }
 
@@ -5263,10 +5274,10 @@
           await setCustomBackgroundFromFile(style, file);
           render();
           openDetail(style);
-          showToast('Custom cover updated.');
+          showToast('커스텀 커버를 업데이트했습니다.');
         } catch (err) {
           console.error(err);
-          showToast('Failed to set custom cover.');
+          showToast('커스텀 커버를 설정하지 못했습니다.');
         }
       };
     }
@@ -5277,16 +5288,16 @@
         await removeCustomBackground(style);
         render();
         openDetail(style);
-        showToast('Custom cover removed.');
+        showToast('커스텀 커버를 제거했습니다.');
       };
     }
 
     if (dom.detailBinderStatus) {
       const bits = [];
-      bits.push(currentDeck ? `Deck: ${currentDeck.name}` : 'Deck: none');
-      bits.push(hasCustomCover ? 'Custom cover active' : 'Using default thumbnail');
-      if (activeBinderFilterType === 'favorites') bits.push('Viewing favorites');
-      if (activeBinderFilterType === 'deck' && activeBinderFilterId) bits.push(`Viewing ${binderDeckLabel(activeBinderFilterId)}`);
+      bits.push(currentDeck ? `현재 보드: ${currentDeck.name}` : '현재 보드: 없음');
+      bits.push(hasCustomCover ? '커스텀 커버 사용 중' : '기본 썸네일 사용 중');
+      if (activeBinderFilterType === 'favorites') bits.push('즐겨찾기 보는 중');
+      if (activeBinderFilterType === 'deck' && activeBinderFilterId) bits.push(`${binderDeckLabel(activeBinderFilterId)} 보는 중`);
       dom.detailBinderStatus.textContent = bits.join(' · ');
     }
   }
@@ -5309,8 +5320,8 @@
     button.type = 'button';
     button.className = 'pill';
     const label = activeBinderFilterType === 'favorites'
-      ? 'Binder: Favorites'
-      : `Binder: ${binderDeckLabel(activeBinderFilterId)}`;
+      ? '보드: 즐겨찾기'
+      : `보드: ${binderDeckLabel(activeBinderFilterId)}`;
     button.textContent = label;
     button.addEventListener('click', () => {
       applyBinderFilter('', '');
@@ -7948,12 +7959,12 @@
       currentDeck,
       any: decks.length > 0,
       inCurrentDeck,
-      buttonLabel: inCurrentDeck ? 'Bound' : decks.length ? 'Saved' : 'Bind',
+      buttonLabel: inCurrentDeck ? '저장됨' : decks.length ? '저장됨' : '보드 저장',
       statusText: inCurrentDeck
-        ? `Bound to ${currentDeck.name}`
+        ? `${currentDeck.name}에 저장됨`
         : decks.length
-          ? `Saved in ${decks.length} deck${decks.length === 1 ? '' : 's'}`
-          : `Ready for ${(currentDeck && currentDeck.name) || 'My Deck'}`
+          ? `${decks.length}개 보드에 저장됨`
+          : `${(currentDeck && currentDeck.name) || '내 보드'}에 저장 준비됨`
     };
   }
 
@@ -8115,7 +8126,7 @@
       const added = toggleDeckMembership(style, deck.id);
       selectedStyleId = style.id;
       render();
-      showToast(added ? `Bound to ${deck.name}.` : `Removed from ${deck.name}.`);
+      showToast(added ? `${deck.name}에 저장했습니다.` : `${deck.name}에서 제거했습니다.`);
     };
 
     const card = document.createElement('article');
@@ -8281,10 +8292,10 @@
     const headBindButton = document.createElement('button');
     headBindButton.type = 'button';
     headBindButton.className = `style-card-mini-btn style-card-mini-btn-accent ${binding.inCurrentDeck ? 'active' : ''}`.trim();
-    headBindButton.textContent = binding.inCurrentDeck ? '\uBC14\uC778\uB4DC\uB428' : '\uBC14\uC778\uB4DC';
+    headBindButton.textContent = binding.inCurrentDeck ? '저장됨' : '보드';
     headBindButton.title = binding.inCurrentDeck
-      ? `${selectedDeck()?.name || 'My Deck'}\uC5D0 \uBC14\uC778\uB4DC\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.`
-      : `\uD604\uC7AC \uB371: ${(selectedDeck()?.name || 'My Deck')}`;
+      ? `${selectedDeck()?.name || '내 보드'}에 저장되어 있습니다.`
+      : `현재 보드: ${(selectedDeck()?.name || '내 보드')}`;
     headBindButton.addEventListener('pointerdown', (event) => event.stopPropagation());
     headBindButton.addEventListener('click', (event) => {
       stopBubble(event);
@@ -8300,17 +8311,17 @@
 
       const bindMenuLabel = document.createElement('div');
       bindMenuLabel.className = 'style-card-query-label style-card-query-label-field';
-      bindMenuLabel.textContent = '\uC800\uC7A5\uD560 \uB371';
+      bindMenuLabel.textContent = '저장할 보드';
       bindMenu.appendChild(bindMenuLabel);
 
       const bindMenuStatus = document.createElement('div');
       bindMenuStatus.className = 'style-card-workbench-preview';
-      bindMenuStatus.textContent = `\uD604\uC7AC \uC120\uD0DD \u00B7 ${selectedDeck()?.name || 'My Deck'}`;
+      bindMenuStatus.textContent = `현재 선택 · ${selectedDeck()?.name || '내 보드'}`;
       bindMenu.appendChild(bindMenuStatus);
 
       const bindMenuGuide = document.createElement('div');
       bindMenuGuide.className = 'style-card-workbench-preview';
-      bindMenuGuide.textContent = '\uC800\uC7A5\uD560 \uB371\uC744 \uACE0\uB978 \uB4A4 \uC800\uC7A5 \uBC84\uD2BC\uC744 \uB204\uB974\uC138\uC694.';
+      bindMenuGuide.textContent = '저장할 보드를 고른 뒤 저장 버튼을 누르세요.';
       bindMenu.appendChild(bindMenuGuide);
 
       const headDeckSelect = document.createElement('select');
@@ -8338,7 +8349,7 @@
       const saveBindButton = document.createElement('button');
       saveBindButton.type = 'button';
       saveBindButton.className = 'style-card-mini-btn style-card-mini-btn-accent';
-      saveBindButton.textContent = binding.inCurrentDeck ? '\uC120\uD0DD \uB371\uC5D0\uC11C \uC81C\uAC70' : '\uC120\uD0DD \uB371\uC5D0 \uC800\uC7A5';
+      saveBindButton.textContent = binding.inCurrentDeck ? '선택 보드에서 제거' : '선택 보드에 저장';
       saveBindButton.addEventListener('pointerdown', (event) => event.stopPropagation());
       saveBindButton.addEventListener('click', (event) => {
         stopBubble(event);
@@ -8360,7 +8371,7 @@
       newDeckInHeadButton.addEventListener('pointerdown', (event) => event.stopPropagation());
       newDeckInHeadButton.addEventListener('click', (event) => {
         stopBubble(event);
-        const name = window.prompt('\uC0C8 \uB371 \uC774\uB984', `Deck ${(binderState?.decks || []).length + 1}`);
+        const name = window.prompt('새 보드 이름', `보드 ${(binderState?.decks || []).length + 1}`);
         if (!name) return;
         createDeck(name, style);
         activeBindMenuStyleId = '';
@@ -8430,15 +8441,10 @@
     bindingStatus.className = 'style-card-back-status';
     const boundNames = binding.decks.map((deck) => deck.name).slice(0, 3).join(' / ');
     const bindingBits = [
-      binding.inCurrentDeck ? '현재 덱에 바인딩됨' : binding.any ? '다른 덱에 저장됨' : '아직 바인딩되지 않음',
-      binding.currentDeck ? `현재 덱: ${binding.currentDeck.name}` : '현재 덱: 없음',
+      binding.inCurrentDeck ? '현재 보드에 저장됨' : binding.any ? '다른 보드에 저장됨' : '아직 저장되지 않음',
+      binding.currentDeck ? `현재 보드: ${binding.currentDeck.name}` : '현재 보드: 없음',
       customCover ? '커스텀 커버 사용 중' : '카테고리 컬러 커버'
     ];
-    bindingStatus.textContent = [
-      binding.statusText,
-      binding.currentDeck ? `Current deck: ${binding.currentDeck.name}` : 'Current deck: none',
-      customCover ? 'Custom cover active' : 'Category color cover'
-    ].join(' · ');
     bindingStatus.textContent = bindingBits.join(' · ');
     if (boundNames && !binding.inCurrentDeck) bindingStatus.title = boundNames;
     bindingStatus.hidden = true;
@@ -9003,7 +9009,7 @@
     const backBindButton = document.createElement('button');
     backBindButton.type = 'button';
     backBindButton.className = `style-card-mini-btn style-card-mini-btn-accent ${binding.inCurrentDeck ? 'active' : ''}`.trim();
-    backBindButton.textContent = binding.inCurrentDeck ? '해제' : '바인드';
+    backBindButton.textContent = binding.inCurrentDeck ? '해제' : '저장';
     backBindButton.addEventListener('pointerdown', (event) => event.stopPropagation());
     backBindButton.addEventListener('click', toggleBound);
     backBindButton.hidden = true;
@@ -9012,16 +9018,16 @@
     const newDeckButton = document.createElement('button');
     newDeckButton.type = 'button';
     newDeckButton.className = 'style-card-mini-btn';
-    newDeckButton.textContent = '덱 만들기';
+    newDeckButton.textContent = '새 보드';
     newDeckButton.addEventListener('pointerdown', (event) => event.stopPropagation());
     newDeckButton.addEventListener('click', (event) => {
       stopBubble(event);
-      const name = window.prompt('새 덱 이름', `Deck ${(binderState?.decks || []).length + 1}`);
+      const name = window.prompt('새 보드 이름', `보드 ${(binderState?.decks || []).length + 1}`);
       if (!name) return;
       createDeck(name, style);
       selectedStyleId = style.id;
       render();
-      showToast('덱을 만들었습니다.');
+      showToast('새 보드를 만들었습니다.');
     });
     newDeckButton.hidden = true;
     binderActions.appendChild(newDeckButton);
