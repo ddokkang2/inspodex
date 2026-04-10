@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inspodex Manual Integration Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Inspodex 수동 통합테스트를 페르소나 기반 단계형 UI로 진행하는 QA 전용 페이지입니다."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="manual-integration.css" />
+  </head>
+  <body>
+    <div class="qa-shell">
+      <header class="hero-panel">
+        <div class="hero-copy">
+          <p class="kicker">manual integration lab</p>
+          <h1>Inspodex QA Navigator</h1>
+          <p class="hero-body">
+            페르소나 중심 시나리오로 실제 앱을 옆에서 조작하면서 수동 통합테스트를 진행합니다.
+            목록형 체크리스트 대신 현재 단계만 보이도록 구성했습니다.
+          </p>
+          <div class="hero-tags">
+            <span class="hero-tag">Chrome 권장</span>
+            <span class="hero-tag">팝업 허용</span>
+            <span class="hero-tag">클립보드 허용</span>
+            <span class="hero-tag">localhost:8080</span>
+          </div>
+        </div>
+
+        <div class="hero-progress">
+          <div class="orb" id="overallOrb">
+            <div class="orb-inner">
+              <strong id="overallPercent">0%</strong>
+              <span>전체 완료</span>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button id="prepareScenarioBtn" class="primary-btn" type="button">이 시나리오 준비</button>
+            <button id="copyReportBtn" class="ghost-btn" type="button">리포트 복사</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="qa-grid">
+        <section class="flow-panel">
+          <div class="metric-strip">
+            <article class="metric-card">
+              <span class="metric-label">Scenario</span>
+              <strong id="scenarioIndexText">1 / 5</strong>
+              <span id="scenarioStatusText" class="metric-sub">진행 전</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Step</span>
+              <strong id="stepIndexText">1 / 4</strong>
+              <span id="stepStatusText" class="metric-sub">미실행</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label">Coverage</span>
+              <strong id="coverageText">검색, 디테일, 외부 검색</strong>
+              <span class="metric-sub">현재 시나리오 기준</span>
+            </article>
+          </div>
+
+          <div class="progress-rails">
+            <div class="rail-block">
+              <div class="rail-head">
+                <span>Scenario Flow</span>
+                <strong id="scenarioTitle">Design Discovery</strong>
+              </div>
+              <div id="scenarioRail" class="rail scenario-rail" aria-label="Scenario progress"></div>
+            </div>
+
+            <div class="rail-block">
+              <div class="rail-head">
+                <span>Step Flow</span>
+                <strong id="stepTitle">클린 세션 열기</strong>
+              </div>
+              <div id="stepRail" class="rail step-rail" aria-label="Step progress"></div>
+            </div>
+          </div>
+
+          <article class="persona-card" id="personaCard">
+            <div class="persona-topline">
+              <span class="persona-chip" id="personaRole">브랜드 디자이너</span>
+              <span class="persona-chip soft" id="scenarioTone">Design</span>
+            </div>
+            <div class="persona-grid">
+              <div>
+                <p class="label">Persona</p>
+                <h2 id="personaName">민서</h2>
+              </div>
+              <div>
+                <p class="label">Mission</p>
+                <p id="personaGoal" class="persona-copy"></p>
+              </div>
+              <div>
+                <p class="label">Why This Matters</p>
+                <p id="personaWhy" class="persona-copy"></p>
+              </div>
+            </div>
+            <div id="coverageTags" class="coverage-tags"></div>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card-head">
+              <div>
+                <p class="label">Current Step</p>
+                <h3 id="stepHeading">클린 디자인 세션 열기</h3>
+              </div>
+              <div class="step-badge" id="currentStepBadge">Step 1</div>
+            </div>
+
+            <div class="step-block">
+              <p class="label">Tester Action</p>
+              <p id="stepAction" class="step-copy"></p>
+            </div>
+
+            <div class="step-block">
+              <p class="label">Expected Result</p>
+              <ul id="stepExpected" class="step-list"></ul>
+            </div>
+
+            <div class="step-block" id="stepHintsBlock">
+              <p class="label">Watchpoints</p>
+              <ul id="stepHints" class="step-list subtle"></ul>
+            </div>
+
+            <label class="step-note-wrap" for="stepNote">
+              <span class="label">QA Note</span>
+              <textarea
+                id="stepNote"
+                class="step-note"
+                rows="4"
+                placeholder="재현 경로, 브라우저 상태, 스크린샷 메모, 차단 조건 등을 남기세요."
+              ></textarea>
+            </label>
+
+            <div class="status-toolbar">
+              <button type="button" class="status-btn pass" data-status="pass">Pass</button>
+              <button type="button" class="status-btn fail" data-status="fail">Fail</button>
+              <button type="button" class="status-btn blocked" data-status="blocked">Blocked</button>
+              <button type="button" class="status-btn neutral" data-status="untested">Reset</button>
+            </div>
+
+            <div class="nav-toolbar">
+              <button id="prevStepBtn" type="button" class="ghost-btn">이전 단계</button>
+              <button id="nextStepBtn" type="button" class="primary-btn">다음 단계</button>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-head">
+              <div>
+                <p class="label">Live Summary</p>
+                <h3>실행 현황</h3>
+              </div>
+              <div class="summary-counts">
+                <span class="summary-pill pass" id="passCount">Pass 0</span>
+                <span class="summary-pill fail" id="failCount">Fail 0</span>
+                <span class="summary-pill blocked" id="blockedCount">Blocked 0</span>
+              </div>
+            </div>
+
+            <div class="summary-grid">
+              <div class="summary-box">
+                <span class="summary-label">Current Scenario</span>
+                <strong id="scenarioProgressText">0 / 4 완료</strong>
+              </div>
+              <div class="summary-box">
+                <span class="summary-label">Overall</span>
+                <strong id="overallProgressText">0 / 22 단계 완료</strong>
+              </div>
+              <div class="summary-box">
+                <span class="summary-label">Launch URL</span>
+                <strong id="targetUrlText">./index.html?dir=design</strong>
+              </div>
+            </div>
+
+            <div class="summary-actions">
+              <button id="restartScenarioBtn" type="button" class="ghost-btn">현재 시나리오 초기화</button>
+              <button id="resetProgressBtn" type="button" class="ghost-btn">전체 진행 초기화</button>
+            </div>
+          </article>
+        </section>
+
+        <aside class="lab-panel">
+          <div class="lab-toolbar">
+            <div class="lab-copy">
+              <p class="label">Target App</p>
+              <h2>Live Test Frame</h2>
+            </div>
+            <div class="lab-actions">
+              <button id="reloadAppBtn" type="button" class="ghost-btn">앱 새로고침</button>
+              <button id="resetAppBtn" type="button" class="ghost-btn">앱 상태 초기화</button>
+              <button id="openAppBtn" type="button" class="primary-btn">새 탭으로 열기</button>
+            </div>
+          </div>
+
+          <div class="lab-hint">
+            시나리오 준비 버튼은 Inspodex의 `reference-hub-*` 상태를 지우고 해당 디렉토리로 다시 엽니다.
+            팝업 차단이 켜져 있으면 외부 검색 단계가 막힐 수 있습니다.
+          </div>
+
+          <div class="frame-shell">
+            <iframe
+              id="targetFrame"
+              title="Inspodex application under test"
+              src="./index.html?dir=design"
+            ></iframe>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="manual-integration.js"></script>
+  </body>
+</html>
