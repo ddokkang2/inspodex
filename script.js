@@ -101,6 +101,11 @@
   };
   const DIRECTORY_MODES = Object.keys(DIRECTORY_META);
   const DATA_DIRECTORY_MODES = DIRECTORY_MODES.filter((mode) => mode !== 'all');
+  const core = globalThis.InspodexCore;
+
+  if (!core) {
+    throw new Error('InspodexCore failed to load.');
+  }
 
   const dom = {
     grid: document.getElementById('styleGrid'),
@@ -733,47 +738,18 @@
   };
 
   function tokenize(v) {
-    return String(v || '').trim().split(/\s+/).filter(Boolean);
+    return core.tokenize(v);
   }
   function joinTokens(tokens) {
-    const out = [];
-    const seen = new Set();
-    for (const t of tokens.flatMap(tokenize)) {
-      const k = t.toLowerCase();
-      if (seen.has(k)) continue;
-      seen.add(k);
-      out.push(t);
-    }
-    return out.join(' ').trim();
+    return core.joinTokens(tokens);
   }
 
   function uniqueText(list) {
-    const out = [];
-    const seen = new Set();
-    for (const item of list || []) {
-      const value = String(item || '').trim();
-      if (!value) continue;
-      const key = value.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(value);
-    }
-    return out;
+    return core.uniqueText(list);
   }
 
   function prettifyToken(value) {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    const spaced = raw.replace(/-/g, ' ');
-    const lower = spaced.toLowerCase();
-    if (lower === 'ui') return 'UI';
-    if (lower === 'ux') return 'UX';
-    if (lower === '3d') return '3D';
-    if (lower === '2d') return '2D';
-    if (lower === 'y2k') return 'Y2K';
-    if (lower === 'saas') return 'SaaS';
-    if (lower === 'rpg') return 'RPG';
-    return spaced.replace(/\b[a-z]/g, (ch) => ch.toUpperCase());
+    return core.prettifyToken(value);
   }
 
   function directoryLabel(mode) {
@@ -1254,36 +1230,17 @@
   }
 
   function escapeRegExp(s) {
-    return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return core.escapeRegExp(s);
   }
 
   function hexToRgb(hex) {
-    const h = String(hex || '').trim().replace('#', '');
-    if (!/^[0-9a-f]{6}$/i.test(h)) return null;
-    const n = parseInt(h, 16);
-    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    return core.hexToRgb(hex);
   }
   function relativeLuminance({ r, g, b }) {
-    const srgb = [r, g, b].map((v) => {
-      const x = v / 255;
-      return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    return core.relativeLuminance({ r, g, b });
   }
   function normalizePaletteColors(colors) {
-    const unique = [];
-    colors.forEach((c) => {
-      const v = String(c || '').trim().toUpperCase();
-      if (!v) return;
-      if (!unique.includes(v)) unique.push(v);
-    });
-    const scored = unique.map((hex) => {
-      const rgb = hexToRgb(hex);
-      const lum = rgb ? relativeLuminance(rgb) : -1;
-      return { hex, lum };
-    });
-    scored.sort((a, b) => b.lum - a.lum);
-    return scored.map((x) => x.hex);
+    return core.normalizePaletteColors(colors);
   }
 
   function stripIntentTokens(input, mode = directoryMode) {
@@ -1443,50 +1400,15 @@
   }
 
   function sanitizeSearchBase(value) {
-    return String(value || '')
-      .replace(/[가-힣ㄱ-ㅎㅏ-ㅣ]+/g, ' ')
-      .replace(/[“”‘’]/g, ' ')
-      .replace(/[쨌/]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return core.sanitizeSearchBase(value);
   }
 
   function sanitizeSearchQueryBase(value) {
-    return String(value || '')
-      .replace(/[\u3131-\u318E\uAC00-\uD7A3]/g, ' ')
-      .replace(/[\/|]+/g, ' ')
-      .replace(/[^\w\s#&()+.,'-]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return core.sanitizeSearchQueryBase(value);
   }
 
   function styleQuery(style) {
-    const mode = directoryMode === 'all' ? styleTypeKey(style) : directoryMode;
-    if (mode === 'pose') {
-      const en = sanitizeSearchQueryBase(style?.en || '');
-      const poseType = String(style?.poseType || '').trim() || String(style?.id || '').trim().split('-')[0] || '';
-      const id = String(style?.id || '').trim();
-      const variantRaw = (poseType && id.startsWith(`${poseType}-`)) ? id.slice(poseType.length + 1) : '';
-      const variant = variantRaw
-        .replace(/-/g, ' ')
-        .replace(/^3 4$/, 'three quarter view')
-        .trim();
-      return joinTokens([en, poseType, variant, 'pose reference']);
-    }
-    const raw = sanitizeSearchQueryBase(style?.q || '');
-    if (raw) return raw;
-    if (mode === 'character') {
-      const en = sanitizeSearchQueryBase(style?.en || '');
-      return joinTokens([en, 'character design']);
-    }
-    const normalizedEn = sanitizeSearchQueryBase(style?.en || '');
-    if (normalizedEn) return normalizedEn;
-    return sanitizeSearchQueryBase(String(style?.id || '').replace(/-/g, ' '));
-    const en = String(style?.en || '').trim();
-    if (en) return en.replace(/[·/]/g, ' ').replace(/\s+/g, ' ').trim();
-    const ko = String(style?.ko || '').trim();
-    if (ko) return ko.replace(/[·/]/g, ' ').replace(/\s+/g, ' ').trim();
-    return String(style?.id || '').trim();
+    return core.buildStyleQuery(style, { mode: directoryMode });
   }
 
   function referenceMode(style) {
@@ -1495,40 +1417,19 @@
   }
 
   function searchPhrase(value) {
-    return String(value || '')
-      .replace(/[^\w\s#-]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return core.searchPhrase(value);
   }
 
   function referenceFocusTerms(style, limit = 3) {
-    return uniqueText([
-      ...(style?.characteristics || []),
-      ...(style?.tags || []).map(prettifyToken),
-      ...(style?.searchTokens || []).map(prettifyToken)
-    ])
-      .map(searchPhrase)
-      .filter(Boolean)
-      .filter((value) => value.length >= 3)
-      .slice(0, limit);
+    return core.referenceFocusTerms(style, limit);
   }
 
   function quickSearchTail(mode) {
-    if (mode === 'artist') return 'style reference';
-    if (mode === 'character') return 'character design reference';
-    if (mode === 'photo') return 'photo reference';
-    if (mode === 'palette') return 'color palette reference';
-    if (mode === 'pose') return 'pose reference';
-    return 'design reference';
+    return core.quickSearchTail(mode);
   }
 
   function preciseSearchTail(mode) {
-    if (mode === 'artist') return 'visual language composition lighting palette reference';
-    if (mode === 'character') return 'character design model sheet rendering style reference';
-    if (mode === 'photo') return 'photography lighting composition color grade reference';
-    if (mode === 'palette') return 'color palette swatches hex codes moodboard';
-    if (mode === 'pose') return 'full body pose anatomy silhouette reference';
-    return 'graphic design typography layout reference';
+    return core.preciseSearchTail(mode);
   }
 
   function quickSearchQuery(style, siteKey = activeSiteKey) {
