@@ -1,997 +1,1037 @@
-﻿window.STYLES_DATA = [
+window.STYLES_DATA = [
     {
-        "id":  "3d-illustration",
-        "ko":  "3D 일러스트",
-        "en":  "3D Illustration"
+        "id": "3d-illustration",
+        "ko": "3D 일러스트",
+        "en": "3D Illustration"
     },
     {
-        "id":  "acid-graphics",
-        "ko":  "애시드 그래픽",
-        "en":  "Acid Graphics"
+        "id": "acid-graphics",
+        "ko": "애시드 그래픽",
+        "en": "Acid Graphics"
     },
     {
-        "id":  "anti-design",
-        "ko":  "안티-디자인",
-        "en":  "Anti-design"
+        "id": "anti-design",
+        "ko": "안티-디자인",
+        "en": "Anti-design"
     },
     {
-        "id":  "art-deco",
-        "ko":  "아르데코",
-        "en":  "Art Deco"
+        "id": "art-deco",
+        "ko": "아르데코",
+        "en": "Art Deco"
     },
     {
-        "id":  "art-nouveau",
-        "ko":  "아르누보",
-        "en":  "Art Nouveau"
+        "id": "art-nouveau",
+        "ko": "아르누보",
+        "en": "Art Nouveau"
     },
     {
-        "id":  "arts-and-crafts",
-        "ko":  "아츠 앤 크래프츠",
-        "en":  "Arts and Crafts"
+        "id": "arts-and-crafts",
+        "ko": "아츠 앤 크래프츠",
+        "en": "Arts and Crafts"
     },
     {
-        "id":  "asymmetric",
-        "ko":  "비대칭 레이아웃",
-        "en":  "Asymmetric Layout"
+        "id": "asymmetric",
+        "ko": "비대칭 레이아웃",
+        "en": "Asymmetric Layout"
     },
     {
-        "id":  "baroque",
-        "ko":  "바로크",
-        "en":  "Baroque"
+        "id": "baroque",
+        "ko": "바로크",
+        "en": "Baroque"
     },
     {
-        "id":  "bauhaus",
-        "ko":  "바우하우스",
-        "en":  "Bauhaus"
+        "id": "bauhaus",
+        "ko": "바우하우스",
+        "en": "Bauhaus"
     },
     {
-        "id":  "bento-ui",
-        "ko":  "벤토 UI",
-        "en":  "Bento UI"
+        "id": "bento-ui",
+        "ko": "벤토 UI",
+        "en": "Bento UI"
     },
     {
-        "id":  "bio-tech",
-        "ko":  "바이오/메디컬",
-        "en":  "Bio / Medical"
+        "id": "bio-tech",
+        "ko": "바이오/메디컬",
+        "en": "Bio / Medical"
     },
     {
-        "id":  "blackletter",
-        "ko":  "블랙레터/고딕 서체",
-        "en":  "Blackletter"
+        "id": "blackletter",
+        "ko": "블랙레터/고딕 서체",
+        "en": "Blackletter"
     },
     {
-        "id":  "bold-typography-ui",
-        "ko":  "볼드 타이포 UI",
-        "en":  "Bold Typography UI"
+        "id": "bold-typography-ui",
+        "ko": "볼드 타이포 UI",
+        "en": "Bold Typography UI"
     },
     {
-        "id":  "brutalism-historical",
-        "ko":  "브루탈리즘(건축/그래픽)",
-        "en":  "Brutalism"
+        "id": "brutalism-historical",
+        "ko": "브루탈리즘(건축/그래픽)",
+        "en": "Brutalism"
     },
     {
-        "id":  "card-ui",
-        "ko":  "카드 기반 UI",
-        "en":  "Card-based UI"
+        "id": "card-ui",
+        "ko": "카드 기반 UI",
+        "en": "Card-based UI"
     },
     {
-        "id":  "chrome",
-        "ko":  "크롬",
-        "en":  "Chrome"
+        "id": "chrome",
+        "ko": "크롬",
+        "en": "Chrome"
     },
     {
-        "id":  "claymorphism",
-        "ko":  "클레이모피즘",
-        "en":  "Claymorphism"
+        "id": "claymorphism",
+        "ko": "클레이모피즘",
+        "en": "Claymorphism"
     },
     {
-        "id":  "collage",
-        "ko":  "콜라주",
-        "en":  "Collage"
+        "id": "collage",
+        "ko": "콜라주",
+        "en": "Collage"
     },
     {
-        "id":  "comic",
-        "ko":  "코믹/만화",
-        "en":  "Comic"
+        "id": "comic",
+        "ko": "코믹/만화",
+        "en": "Comic"
     },
     {
-        "id":  "concrete",
-        "ko":  "콘크리트 텍스처",
-        "en":  "Concrete Texture"
+        "id": "concrete",
+        "ko": "콘크리트 텍스처",
+        "en": "Concrete Texture"
     },
     {
-        "id":  "constructivism",
-        "ko":  "구성주의",
-        "en":  "Constructivism"
+        "id": "constructivism",
+        "ko": "구성주의",
+        "en": "Constructivism"
     },
     {
-        "id":  "corporate-memphis",
-        "ko":  "코퍼레이트 멤피스",
-        "en":  "Corporate Memphis"
+        "id": "corporate-memphis",
+        "ko": "코퍼레이트 멤피스",
+        "en": "Corporate Memphis"
     },
     {
-        "id":  "cottagecore",
-        "ko":  "코티지코어",
-        "en":  "Cottagecore"
+        "id": "cottagecore",
+        "ko": "코티지코어",
+        "en": "Cottagecore"
     },
     {
-        "id":  "cubism",
-        "ko":  "입체주의",
-        "en":  "Cubism"
+        "id": "cubism",
+        "ko": "입체주의",
+        "en": "Cubism"
     },
     {
-        "id":  "cyberpunk",
-        "ko":  "사이버펑크",
-        "en":  "Cyberpunk"
+        "id": "cyberpunk",
+        "ko": "사이버펑크",
+        "en": "Cyberpunk"
     },
     {
-        "id":  "dada",
-        "ko":  "다다이즘",
-        "en":  "Dada"
+        "id": "dada",
+        "ko": "다다이즘",
+        "en": "Dada"
     },
     {
-        "id":  "dark-academia",
-        "ko":  "다크 아카데미아",
-        "en":  "Dark Academia"
+        "id": "dark-academia",
+        "ko": "다크 아카데미아",
+        "en": "Dark Academia"
     },
     {
-        "id":  "dark-mode",
-        "ko":  "다크 모드",
-        "en":  "Dark Mode"
+        "id": "dark-mode",
+        "ko": "다크 모드",
+        "en": "Dark Mode"
     },
     {
-        "id":  "dashboard",
-        "ko":  "대시보드",
-        "en":  "Dashboard"
+        "id": "dashboard",
+        "ko": "대시보드",
+        "en": "Dashboard"
     },
     {
-        "id":  "data-dense",
-        "ko":  "데이터 밀집형",
-        "en":  "Data-dense UI"
+        "id": "data-dense",
+        "ko": "데이터 밀집형",
+        "en": "Data-dense UI"
     },
     {
-        "id":  "de-stijl",
-        "ko":  "데 스틸",
-        "en":  "De Stijl"
+        "id": "data-visualization",
+        "ko": "??? ???",
+        "en": "Data Visualization"
     },
     {
-        "id":  "didone",
-        "ko":  "디도네(하이콘트라스트 세리프)",
-        "en":  "Didone"
+        "id": "information-design",
+        "ko": "?? ???",
+        "en": "Information Design"
     },
     {
-        "id":  "doodle",
-        "ko":  "두들/낙서",
-        "en":  "Doodle"
+        "id": "infographic",
+        "ko": "?????",
+        "en": "Infographic"
     },
     {
-        "id":  "duochrome",
-        "ko":  "듀오크롬",
-        "en":  "Duochrome"
+        "id": "de-stijl",
+        "ko": "데 스틸",
+        "en": "De Stijl"
     },
     {
-        "id":  "duotone",
-        "ko":  "듀오톤",
-        "en":  "Duotone"
+        "id": "didone",
+        "ko": "디도네(하이콘트라스트 세리프)",
+        "en": "Didone"
     },
     {
-        "id":  "earthy",
-        "ko":  "어스톤",
-        "en":  "Earthy Tones"
+        "id": "doodle",
+        "ko": "두들/낙서",
+        "en": "Doodle"
     },
     {
-        "id":  "eco",
-        "ko":  "에코/내추럴",
-        "en":  "Eco / Natural"
+        "id": "duochrome",
+        "ko": "듀오크롬",
+        "en": "Duochrome"
     },
     {
-        "id":  "ecommerce",
-        "ko":  "이커머스",
-        "en":  "E-commerce"
+        "id": "duotone",
+        "ko": "듀오톤",
+        "en": "Duotone"
     },
     {
-        "id":  "editorial",
-        "ko":  "에디토리얼",
-        "en":  "Editorial"
+        "id": "earthy",
+        "ko": "어스톤",
+        "en": "Earthy Tones"
     },
     {
-        "id":  "experimental-type",
-        "ko":  "실험적 타이포",
-        "en":  "Experimental Typography"
+        "id": "eco",
+        "ko": "에코/내추럴",
+        "en": "Eco / Natural"
     },
     {
-        "id":  "expressionism",
-        "ko":  "표현주의",
-        "en":  "Expressionism"
+        "id": "ecommerce",
+        "ko": "이커머스",
+        "en": "E-commerce"
     },
     {
-        "id":  "filled-icons",
-        "ko":  "필드(솔리드) 아이콘",
-        "en":  "Solid Icons"
+        "id": "editorial",
+        "ko": "에디토리얼",
+        "en": "Editorial"
     },
     {
-        "id":  "finance",
-        "ko":  "핀테크/금융",
-        "en":  "Fintech"
+        "id": "experimental-type",
+        "ko": "실험적 타이포",
+        "en": "Experimental Typography"
     },
     {
-        "id":  "flat-2",
-        "ko":  "플랫 2.0",
-        "en":  "Flat 2.0"
+        "id": "expressionism",
+        "ko": "표현주의",
+        "en": "Expressionism"
     },
     {
-        "id":  "flat-design",
-        "ko":  "플랫 디자인",
-        "en":  "Flat Design"
+        "id": "filled-icons",
+        "ko": "필드(솔리드) 아이콘",
+        "en": "Solid Icons"
     },
     {
-        "id":  "flat-illustration",
-        "ko":  "플랫 일러스트",
-        "en":  "Flat Illustration"
+        "id": "finance",
+        "ko": "핀테크/금융",
+        "en": "Fintech"
     },
     {
-        "id":  "futurism",
-        "ko":  "미래주의",
-        "en":  "Futurism"
+        "id": "flat-2",
+        "ko": "플랫 2.0",
+        "en": "Flat 2.0"
     },
     {
-        "id":  "gaming",
-        "ko":  "게이밍 UI",
-        "en":  "Gaming UI"
+        "id": "flat-design",
+        "ko": "플랫 디자인",
+        "en": "Flat Design"
     },
     {
-        "id":  "geometric-illustration",
-        "ko":  "기하학 일러스트",
-        "en":  "Geometric Illustration"
+        "id": "flat-illustration",
+        "ko": "플랫 일러스트",
+        "en": "Flat Illustration"
     },
     {
-        "id":  "glassmorphism",
-        "ko":  "글래스모피즘",
-        "en":  "Glassmorphism"
+        "id": "futurism",
+        "ko": "미래주의",
+        "en": "Futurism"
     },
     {
-        "id":  "glitch",
-        "ko":  "글리치",
-        "en":  "Glitch"
+        "id": "gaming",
+        "ko": "게이밍 UI",
+        "en": "Gaming UI"
     },
     {
-        "id":  "gothic",
-        "ko":  "고딕/다크 아트",
-        "en":  "Gothic"
+        "id": "geometric-illustration",
+        "ko": "기하학 일러스트",
+        "en": "Geometric Illustration"
     },
     {
-        "id":  "gradient-mesh",
-        "ko":  "그라디언트/메시",
-        "en":  "Gradient / Mesh"
+        "id": "glassmorphism",
+        "ko": "글래스모피즘",
+        "en": "Glassmorphism"
     },
     {
-        "id":  "grain",
-        "ko":  "그레인/필름 질감",
-        "en":  "Grain / Film Texture"
+        "id": "glitch",
+        "ko": "글리치",
+        "en": "Glitch"
     },
     {
-        "id":  "grid-heavy",
-        "ko":  "그리드 중심",
-        "en":  "Grid-heavy"
+        "id": "gothic",
+        "ko": "고딕/다크 아트",
+        "en": "Gothic"
     },
     {
-        "id":  "grunge",
-        "ko":  "그런지",
-        "en":  "Grunge"
+        "id": "gradient-mesh",
+        "ko": "그라디언트/메시",
+        "en": "Gradient / Mesh"
     },
     {
-        "id":  "halftone",
-        "ko":  "하프톤/도트",
-        "en":  "Halftone"
+        "id": "grain",
+        "ko": "그레인/필름 질감",
+        "en": "Grain / Film Texture"
     },
     {
-        "id":  "handmade",
-        "ko":  "핸드메이드/크래프트",
-        "en":  "Handmade / Craft"
+        "id": "grid-heavy",
+        "ko": "그리드 중심",
+        "en": "Grid-heavy"
     },
     {
-        "id":  "hero-centric",
-        "ko":  "히어로 중심 랜딩",
-        "en":  "Hero-centric Landing"
+        "id": "grunge",
+        "ko": "그런지",
+        "en": "Grunge"
     },
     {
-        "id":  "high-contrast",
-        "ko":  "하이 콘트라스트",
-        "en":  "High Contrast"
+        "id": "halftone",
+        "ko": "하프톤/도트",
+        "en": "Halftone"
     },
     {
-        "id":  "holographic",
-        "ko":  "홀로그래픽",
-        "en":  "Holographic"
+        "id": "handmade",
+        "ko": "핸드메이드/크래프트",
+        "en": "Handmade / Craft"
     },
     {
-        "id":  "impressionism",
-        "ko":  "인상주의",
-        "en":  "Impressionism"
+        "id": "hero-centric",
+        "ko": "히어로 중심 랜딩",
+        "en": "Hero-centric Landing"
     },
     {
-        "id":  "ink",
-        "ko":  "잉크/펜 드로잉",
-        "en":  "Ink Drawing"
+        "id": "high-contrast",
+        "ko": "하이 콘트라스트",
+        "en": "High Contrast"
     },
     {
-        "id":  "international-corporate",
-        "ko":  "코퍼레이트/인터내셔널",
-        "en":  "Corporate / International"
+        "id": "holographic",
+        "ko": "홀로그래픽",
+        "en": "Holographic"
     },
     {
-        "id":  "iridescent",
-        "ko":  "이리데슨트",
-        "en":  "Iridescent"
+        "id": "impressionism",
+        "ko": "인상주의",
+        "en": "Impressionism"
     },
     {
-        "id":  "isometric",
-        "ko":  "아이소메트릭",
-        "en":  "Isometric"
+        "id": "ink",
+        "ko": "잉크/펜 드로잉",
+        "en": "Ink Drawing"
     },
     {
-        "id":  "japanese-minimal",
-        "ko":  "일본식 미니멀",
-        "en":  "Japanese Minimal"
+        "id": "international-corporate",
+        "ko": "코퍼레이트/인터내셔널",
+        "en": "Corporate / International"
     },
     {
-        "id":  "kawaii",
-        "ko":  "카와이",
-        "en":  "Kawaii"
+        "id": "iridescent",
+        "ko": "이리데슨트",
+        "en": "Iridescent"
     },
     {
-        "id":  "kinetic-type",
-        "ko":  "키네틱 타이포",
-        "en":  "Kinetic Typography"
+        "id": "isometric",
+        "ko": "아이소메트릭",
+        "en": "Isometric"
     },
     {
-        "id":  "letterpress",
-        "ko":  "레터프레스",
-        "en":  "Letterpress"
+        "id": "japanese-minimal",
+        "ko": "일본식 미니멀",
+        "en": "Japanese Minimal"
     },
     {
-        "id":  "light-mode",
-        "ko":  "라이트/오프화이트",
-        "en":  "Light / Off-white"
+        "id": "kawaii",
+        "ko": "카와이",
+        "en": "Kawaii"
     },
     {
-        "id":  "line-art",
-        "ko":  "라인아트",
-        "en":  "Line Art"
+        "id": "kinetic-type",
+        "ko": "키네틱 타이포",
+        "en": "Kinetic Typography"
     },
     {
-        "id":  "low-poly",
-        "ko":  "로우 폴리",
-        "en":  "Low Poly"
+        "id": "letterpress",
+        "ko": "레터프레스",
+        "en": "Letterpress"
     },
     {
-        "id":  "luxury",
-        "ko":  "럭셔리",
-        "en":  "Luxury"
+        "id": "light-mode",
+        "ko": "라이트/오프화이트",
+        "en": "Light / Off-white"
     },
     {
-        "id":  "masonry",
-        "ko":  "메이슨리/핀터레스트형",
-        "en":  "Masonry Grid"
+        "id": "line-art",
+        "ko": "라인아트",
+        "en": "Line Art"
     },
     {
-        "id":  "material-design",
-        "ko":  "머티리얼 디자인",
-        "en":  "Material Design"
+        "id": "low-poly",
+        "ko": "로우 폴리",
+        "en": "Low Poly"
     },
     {
-        "id":  "maximalism",
-        "ko":  "맥시멀리즘",
-        "en":  "Maximalism"
+        "id": "luxury",
+        "ko": "럭셔리",
+        "en": "Luxury"
     },
     {
-        "id":  "maximal-ui",
-        "ko":  "맥시멀 UI",
-        "en":  "Maximal UI"
+        "id": "masonry",
+        "ko": "메이슨리/핀터레스트형",
+        "en": "Masonry Grid"
     },
     {
-        "id":  "memphis",
-        "ko":  "멤피스",
-        "en":  "Memphis"
+        "id": "material-design",
+        "ko": "머티리얼 디자인",
+        "en": "Material Design"
     },
     {
-        "id":  "metallic",
-        "ko":  "메탈릭",
-        "en":  "Metallic"
+        "id": "maximalism",
+        "ko": "맥시멀리즘",
+        "en": "Maximalism"
     },
     {
-        "id":  "microinteractions",
-        "ko":  "마이크로 인터랙션",
-        "en":  "Microinteractions"
+        "id": "maximal-ui",
+        "ko": "맥시멀 UI",
+        "en": "Maximal UI"
     },
     {
-        "id":  "minimalism",
-        "ko":  "미니멀리즘",
-        "en":  "Minimalism"
+        "id": "memphis",
+        "ko": "멤피스",
+        "en": "Memphis"
     },
     {
-        "id":  "minimal-maximal",
-        "ko":  "미니맥스",
-        "en":  "Minimax"
+        "id": "metallic",
+        "ko": "메탈릭",
+        "en": "Metallic"
     },
     {
-        "id":  "minimal-ui",
-        "ko":  "미니멀 UI",
-        "en":  "Minimal UI"
+        "id": "microinteractions",
+        "ko": "마이크로 인터랙션",
+        "en": "Microinteractions"
     },
     {
-        "id":  "modernism",
-        "ko":  "모더니즘",
-        "en":  "Modernism"
+        "id": "minimalism",
+        "ko": "미니멀리즘",
+        "en": "Minimalism"
     },
     {
-        "id":  "monochrome-lux",
-        "ko":  "흑백 럭셔리",
-        "en":  "Monochrome Luxury"
+        "id": "minimal-maximal",
+        "ko": "미니맥스",
+        "en": "Minimax"
     },
     {
-        "id":  "monochrome-minimal",
-        "ko":  "흑백 미니멀",
-        "en":  "Black \u0026amp; White Minimal"
+        "id": "minimal-ui",
+        "ko": "미니멀 UI",
+        "en": "Minimal UI"
     },
     {
-        "id":  "monospace",
-        "ko":  "모노스페이스/코드 감성",
-        "en":  "Monospace"
+        "id": "modernism",
+        "ko": "모더니즘",
+        "en": "Modernism"
     },
     {
-        "id":  "motion-led",
-        "ko":  "모션 중심",
-        "en":  "Motion-led"
+        "id": "monochrome-lux",
+        "ko": "흑백 럭셔리",
+        "en": "Monochrome Luxury"
     },
     {
-        "id":  "museum",
-        "ko":  "뮤지엄/컬처",
-        "en":  "Museum / Culture"
+        "id": "monochrome-minimal",
+        "ko": "흑백 미니멀",
+        "en": "Black &amp; White Minimal"
     },
     {
-        "id":  "neo-brutalism-web",
-        "ko":  "네오 브루탈리즘(웹)",
-        "en":  "Neo-brutalism (Web)"
+        "id": "monospace",
+        "ko": "모노스페이스/코드 감성",
+        "en": "Monospace"
     },
     {
-        "id":  "neoclassicism",
-        "ko":  "신고전주의",
-        "en":  "Neoclassicism"
+        "id": "motion-led",
+        "ko": "모션 중심",
+        "en": "Motion-led"
     },
     {
-        "id":  "neon",
-        "ko":  "네온",
-        "en":  "Neon"
+        "id": "museum",
+        "ko": "뮤지엄/컬처",
+        "en": "Museum / Culture"
     },
     {
-        "id":  "neumorphism",
-        "ko":  "뉴모피즘",
-        "en":  "Neumorphism"
+        "id": "neo-brutalism-web",
+        "ko": "네오 브루탈리즘(웹)",
+        "en": "Neo-brutalism (Web)"
     },
     {
-        "id":  "newspaper",
-        "ko":  "신문형 레이아웃",
-        "en":  "Newspaper Layout"
+        "id": "neoclassicism",
+        "ko": "신고전주의",
+        "en": "Neoclassicism"
     },
     {
-        "id":  "new-wave",
-        "ko":  "뉴 웨이브 타이포그래피",
-        "en":  "New Wave Typography"
+        "id": "neon",
+        "ko": "네온",
+        "en": "Neon"
     },
     {
-        "id":  "noise-ui",
-        "ko":  "노이즈/도트 텍스처",
-        "en":  "Noise Texture"
+        "id": "neumorphism",
+        "ko": "뉴모피즘",
+        "en": "Neumorphism"
     },
     {
-        "id":  "normcore",
-        "ko":  "놈코어/심플",
-        "en":  "Normcore"
+        "id": "newspaper",
+        "ko": "신문형 레이아웃",
+        "en": "Newspaper Layout"
     },
     {
-        "id":  "op-art",
-        "ko":  "옵아트",
-        "en":  "Op Art"
+        "id": "new-wave",
+        "ko": "뉴 웨이브 타이포그래피",
+        "en": "New Wave Typography"
     },
     {
-        "id":  "organic-shapes",
-        "ko":  "오가닉 쉐이프",
-        "en":  "Organic Shapes"
+        "id": "noise-ui",
+        "ko": "노이즈/도트 텍스처",
+        "en": "Noise Texture"
     },
     {
-        "id":  "outline",
-        "ko":  "아웃라인/스트로크 UI",
-        "en":  "Outline / Stroke UI"
+        "id": "normcore",
+        "ko": "놈코어/심플",
+        "en": "Normcore"
     },
     {
-        "id":  "outline-icons",
-        "ko":  "아웃라인 아이콘",
-        "en":  "Outline Icons"
+        "id": "op-art",
+        "ko": "옵아트",
+        "en": "Op Art"
     },
     {
-        "id":  "paper-texture",
-        "ko":  "페이퍼 텍스처",
-        "en":  "Paper Texture"
+        "id": "organic-shapes",
+        "ko": "오가닉 쉐이프",
+        "en": "Organic Shapes"
     },
     {
-        "id":  "pastel",
-        "ko":  "파스텔",
-        "en":  "Pastel"
+        "id": "outline",
+        "ko": "아웃라인/스트로크 UI",
+        "en": "Outline / Stroke UI"
     },
     {
-        "id":  "photocentric",
-        "ko":  "포토 센트릭",
-        "en":  "Photo-centric"
+        "id": "outline-icons",
+        "ko": "아웃라인 아이콘",
+        "en": "Outline Icons"
     },
     {
-        "id":  "pill-ui",
-        "ko":  "필/캡슐 UI",
-        "en":  "Pill UI"
+        "id": "paper-texture",
+        "ko": "페이퍼 텍스처",
+        "en": "Paper Texture"
     },
     {
-        "id":  "pixel",
-        "ko":  "픽셀아트",
-        "en":  "Pixel Art"
+        "id": "pastel",
+        "ko": "파스텔",
+        "en": "Pastel"
     },
     {
-        "id":  "playful",
-        "ko":  "플레이풀",
-        "en":  "Playful"
+        "id": "photocentric",
+        "ko": "포토 센트릭",
+        "en": "Photo-centric"
     },
     {
-        "id":  "pop-art",
-        "ko":  "팝아트",
-        "en":  "Pop Art"
+        "id": "pill-ui",
+        "ko": "필/캡슐 UI",
+        "en": "Pill UI"
     },
     {
-        "id":  "portfolio",
-        "ko":  "포트폴리오",
-        "en":  "Portfolio"
+        "id": "pixel",
+        "ko": "픽셀아트",
+        "en": "Pixel Art"
     },
     {
-        "id":  "postmodernism",
-        "ko":  "포스트모더니즘",
-        "en":  "Postmodernism"
+        "id": "playful",
+        "ko": "플레이풀",
+        "en": "Playful"
     },
     {
-        "id":  "product-led",
-        "ko":  "프로덕트 중심",
-        "en":  "Product-led Design"
+        "id": "pop-art",
+        "ko": "팝아트",
+        "en": "Pop Art"
     },
     {
-        "id":  "psychedelic",
-        "ko":  "사이키델릭",
-        "en":  "Psychedelic"
+        "id": "portfolio",
+        "ko": "포트폴리오",
+        "en": "Portfolio"
     },
     {
-        "id":  "punk",
-        "ko":  "펑크/DIY",
-        "en":  "Punk / DIY"
+        "id": "postmodernism",
+        "ko": "포스트모더니즘",
+        "en": "Postmodernism"
     },
     {
-        "id":  "renaissance",
-        "ko":  "르네상스",
-        "en":  "Renaissance"
+        "id": "product-led",
+        "ko": "프로덕트 중심",
+        "en": "Product-led Design"
     },
     {
-        "id":  "retro-70s",
-        "ko":  "레트로(70s)",
-        "en":  "Retro 70s"
+        "id": "psychedelic",
+        "ko": "사이키델릭",
+        "en": "Psychedelic"
     },
     {
-        "id":  "retro-80s",
-        "ko":  "레트로(80s)",
-        "en":  "Retro 80s"
+        "id": "punk",
+        "ko": "펑크/DIY",
+        "en": "Punk / DIY"
     },
     {
-        "id":  "retro-90s",
-        "ko":  "레트로(90s)",
-        "en":  "Retro 90s"
+        "id": "renaissance",
+        "ko": "르네상스",
+        "en": "Renaissance"
     },
     {
-        "id":  "risograph",
-        "ko":  "리소그래프",
-        "en":  "Risograph"
+        "id": "retro-70s",
+        "ko": "레트로(70s)",
+        "en": "Retro 70s"
     },
     {
-        "id":  "rococo",
-        "ko":  "로코코",
-        "en":  "Rococo"
+        "id": "retro-80s",
+        "ko": "레트로(80s)",
+        "en": "Retro 80s"
     },
     {
-        "id":  "romanticism",
-        "ko":  "낭만주의",
-        "en":  "Romanticism"
+        "id": "retro-90s",
+        "ko": "레트로(90s)",
+        "en": "Retro 90s"
     },
     {
-        "id":  "saas",
-        "ko":  "SaaS 랜딩",
-        "en":  "SaaS Landing"
+        "id": "risograph",
+        "ko": "리소그래프",
+        "en": "Risograph"
     },
     {
-        "id":  "scandinavian",
-        "ko":  "스칸디나비안",
-        "en":  "Scandinavian"
+        "id": "rococo",
+        "ko": "로코코",
+        "en": "Rococo"
     },
     {
-        "id":  "scifi-hud",
-        "ko":  "SF HUD",
-        "en":  "Sci‑fi HUD"
+        "id": "romanticism",
+        "ko": "낭만주의",
+        "en": "Romanticism"
     },
     {
-        "id":  "screenprint",
-        "ko":  "실크스크린",
-        "en":  "Screen Print"
+        "id": "saas",
+        "ko": "SaaS 랜딩",
+        "en": "SaaS Landing"
     },
     {
-        "id":  "skeuo-2000s",
-        "ko":  "2000s 스큐어",
-        "en":  "2000s Skeuo"
+        "id": "scandinavian",
+        "ko": "스칸디나비안",
+        "en": "Scandinavian"
     },
     {
-        "id":  "skeuomorphism",
-        "ko":  "스큐어모피즘",
-        "en":  "Skeuomorphism"
+        "id": "scifi-hud",
+        "ko": "SF HUD",
+        "en": "Sci‑fi HUD"
     },
     {
-        "id":  "soft-ui",
-        "ko":  "소프트 UI",
-        "en":  "Soft UI"
+        "id": "screenprint",
+        "ko": "실크스크린",
+        "en": "Screen Print"
     },
     {
-        "id":  "split-layout",
-        "ko":  "스플릿 레이아웃",
-        "en":  "Split Layout"
+        "id": "skeuo-2000s",
+        "ko": "2000s 스큐어",
+        "en": "2000s Skeuo"
     },
     {
-        "id":  "startup-modern",
-        "ko":  "스타트업 모던",
-        "en":  "Startup Modern"
+        "id": "skeuomorphism",
+        "ko": "스큐어모피즘",
+        "en": "Skeuomorphism"
     },
     {
-        "id":  "steampunk",
-        "ko":  "스팀펑크",
-        "en":  "Steampunk"
+        "id": "soft-ui",
+        "ko": "소프트 UI",
+        "en": "Soft UI"
     },
     {
-        "id":  "sticker-pack",
-        "ko":  "스티커/패치 감성",
-        "en":  "Sticker Pack"
+        "id": "split-layout",
+        "ko": "스플릿 레이아웃",
+        "en": "Split Layout"
     },
     {
-        "id":  "storybook",
-        "ko":  "스토리텔링 스크롤",
-        "en":  "Storytelling Scroll"
+        "id": "startup-modern",
+        "ko": "스타트업 모던",
+        "en": "Startup Modern"
     },
     {
-        "id":  "suprematism",
-        "ko":  "절대주의",
-        "en":  "Suprematism"
+        "id": "steampunk",
+        "ko": "스팀펑크",
+        "en": "Steampunk"
     },
     {
-        "id":  "surrealism",
-        "ko":  "초현실주의",
-        "en":  "Surrealism"
+        "id": "sticker-pack",
+        "ko": "스티커/패치 감성",
+        "en": "Sticker Pack"
     },
     {
-        "id":  "swiss",
-        "ko":  "스위스/인터내셔널 타이포그래피",
-        "en":  "Swiss / International Typographic Style"
+        "id": "storybook",
+        "ko": "스토리텔링 스크롤",
+        "en": "Storytelling Scroll"
     },
     {
-        "id":  "tech",
-        "ko":  "테크/퓨처",
-        "en":  "Tech / Futuristic"
+        "id": "suprematism",
+        "ko": "절대주의",
+        "en": "Suprematism"
     },
     {
-        "id":  "terminal",
-        "ko":  "터미널/CLI",
-        "en":  "Terminal UI"
+        "id": "surrealism",
+        "ko": "초현실주의",
+        "en": "Surrealism"
     },
     {
-        "id":  "typographic-poster",
-        "ko":  "타이포 포스터",
-        "en":  "Typographic Poster"
+        "id": "swiss",
+        "ko": "스위스/인터내셔널 타이포그래피",
+        "en": "Swiss / International Typographic Style"
     },
     {
-        "id":  "vaporwave",
-        "ko":  "베이퍼웨이브",
-        "en":  "Vaporwave"
+        "id": "tech",
+        "ko": "테크/퓨처",
+        "en": "Tech / Futuristic"
     },
     {
-        "id":  "vintage",
-        "ko":  "빈티지",
-        "en":  "Vintage"
+        "id": "terminal",
+        "ko": "터미널/CLI",
+        "en": "Terminal UI"
     },
     {
-        "id":  "wabi-sabi",
-        "ko":  "와비사비",
-        "en":  "Wabi-sabi"
+        "id": "typographic-poster",
+        "ko": "타이포 포스터",
+        "en": "Typographic Poster"
     },
     {
-        "id":  "watercolor",
-        "ko":  "수채화",
-        "en":  "Watercolor"
+        "id": "vaporwave",
+        "ko": "베이퍼웨이브",
+        "en": "Vaporwave"
     },
     {
-        "id":  "web-1-0",
-        "ko":  "웹 1.0",
-        "en":  "Web 1.0"
+        "id": "vintage",
+        "ko": "빈티지",
+        "en": "Vintage"
     },
     {
-        "id":  "web-2-0",
-        "ko":  "웹 2.0(글로시)",
-        "en":  "Web 2.0 Glossy"
+        "id": "wabi-sabi",
+        "ko": "와비사비",
+        "en": "Wabi-sabi"
     },
     {
-        "id":  "western",
-        "ko":  "웨스턴",
-        "en":  "Western"
+        "id": "watercolor",
+        "ko": "수채화",
+        "en": "Watercolor"
     },
     {
-        "id":  "wireframe",
-        "ko":  "와이어프레임/로우파이",
-        "en":  "Wireframe / Low-fi"
+        "id": "web-1-0",
+        "ko": "웹 1.0",
+        "en": "Web 1.0"
     },
     {
-        "id":  "y2k",
-        "ko":  "Y2K",
-        "en":  "Y2K"
+        "id": "web-2-0",
+        "ko": "웹 2.0(글로시)",
+        "en": "Web 2.0 Glossy"
     },
     {
-        "id":  "zine",
-        "ko":  "진(Zine) 스타일",
-        "en":  "Zine"
+        "id": "western",
+        "ko": "웨스턴",
+        "en": "Western"
     },
     {
-        "id":  "international-typographic-style",
-        "ko":  "인터내셔널 타이포그래픽 스타일",
-        "en":  "International Typographic Style"
+        "id": "wireframe",
+        "ko": "와이어프레임/로우파이",
+        "en": "Wireframe / Low-fi"
     },
     {
-        "id":  "mid-century-modern",
-        "ko":  "미드센추리 모던",
-        "en":  "Mid-century Modern"
+        "id": "y2k",
+        "ko": "Y2K",
+        "en": "Y2K"
     },
     {
-        "id":  "dopamine-decor",
-        "ko":  "도파민 데코",
-        "en":  "Dopamine Decor"
+        "id": "zine",
+        "ko": "진(Zine) 스타일",
+        "en": "Zine"
     },
     {
-        "id":  "new-bauhaus",
-        "ko":  "뉴 바우하우스",
-        "en":  "New Bauhaus"
+        "id": "international-typographic-style",
+        "ko": "인터내셔널 타이포그래픽 스타일",
+        "en": "International Typographic Style"
     },
     {
-        "id":  "liquid-metal",
-        "ko":  "리퀴드 메탈",
-        "en":  "Liquid Metal"
+        "id": "mid-century-modern",
+        "ko": "미드센추리 모던",
+        "en": "Mid-century Modern"
     },
     {
-        "id":  "kinetic-typography",
-        "ko":  "키네틱 타이포그래피",
-        "en":  "Kinetic Typography"
+        "id": "dopamine-decor",
+        "ko": "도파민 데코",
+        "en": "Dopamine Decor"
     },
     {
-        "id":  "variable-font-typography",
-        "ko":  "가변 폰트 타이포",
-        "en":  "Variable Font Typography"
+        "id": "new-bauhaus",
+        "ko": "뉴 바우하우스",
+        "en": "New Bauhaus"
     },
     {
-        "id":  "retro-futurism",
-        "ko":  "레트로퓨처리즘",
-        "en":  "Retro-futurism"
+        "id": "liquid-metal",
+        "ko": "리퀴드 메탈",
+        "en": "Liquid Metal"
     },
     {
-        "id":  "synthwave",
-        "ko":  "신스웨이브",
-        "en":  "Synthwave"
+        "id": "kinetic-typography",
+        "ko": "키네틱 타이포그래피",
+        "en": "Kinetic Typography"
     },
     {
-        "id":  "solarpunk",
-        "ko":  "솔라펑크",
-        "en":  "Solarpunk"
+        "id": "variable-font-typography",
+        "ko": "가변 폰트 타이포",
+        "en": "Variable Font Typography"
     },
     {
-        "id":  "hyperpop",
-        "ko":  "하이퍼팝",
-        "en":  "Hyperpop"
+        "id": "retro-futurism",
+        "ko": "레트로퓨처리즘",
+        "en": "Retro-futurism"
     },
     {
-        "id":  "neo-psychedelia",
-        "ko":  "네오 사이키델리아",
-        "en":  "Neo-psychedelia"
+        "id": "synthwave",
+        "ko": "신스웨이브",
+        "en": "Synthwave"
     },
     {
-        "id":  "streetwear-graphics",
-        "ko":  "스트리트웨어 그래픽",
-        "en":  "Streetwear Graphics"
+        "id": "solarpunk",
+        "ko": "솔라펑크",
+        "en": "Solarpunk"
     },
     {
-        "id":  "editorial-layout",
-        "ko":  "에디토리얼 레이아웃",
-        "en":  "Editorial Layout"
+        "id": "hyperpop",
+        "ko": "하이퍼팝",
+        "en": "Hyperpop"
     },
     {
-        "id":  "magazine-style",
-        "ko":  "매거진 스타일",
-        "en":  "Magazine Style"
+        "id": "neo-psychedelia",
+        "ko": "네오 사이키델리아",
+        "en": "Neo-psychedelia"
     },
     {
-        "id":  "brand-system",
-        "ko":  "브랜드 시스템",
-        "en":  "Brand System"
+        "id": "streetwear-graphics",
+        "ko": "스트리트웨어 그래픽",
+        "en": "Streetwear Graphics"
     },
     {
-        "id":  "design-tokens",
-        "ko":  "디자인 토큰 시스템",
-        "en":  "Design Tokens System"
+        "id": "editorial-layout",
+        "ko": "에디토리얼 레이아웃",
+        "en": "Editorial Layout"
     },
     {
-        "id":  "accessible-design",
-        "ko":  "접근성 중심 디자인",
-        "en":  "Accessibility-first Design"
+        "id": "magazine-style",
+        "ko": "매거진 스타일",
+        "en": "Magazine Style"
     },
     {
-        "id":  "inclusive-design",
-        "ko":  "인클루시브 디자인",
-        "en":  "Inclusive Design"
+        "id": "brand-system",
+        "ko": "브랜드 시스템",
+        "en": "Brand System"
     },
     {
-        "id":  "paper-cutout",
-        "ko":  "페이퍼 컷아웃",
-        "en":  "Paper Cutout"
+        "id": "iconography-system",
+        "ko": "??? ???",
+        "en": "Iconography System"
     },
     {
-        "id":  "monoline-illustration",
-        "ko":  "모노라인 일러스트",
-        "en":  "Monoline Illustration"
+        "id": "wayfinding-system",
+        "ko": "?????/?? ???",
+        "en": "Wayfinding System"
     },
     {
-        "id":  "isometric-illustration",
-        "ko":  "아이소메트릭 일러스트",
-        "en":  "Isometric Illustration"
+        "id": "packaging-design",
+        "ko": "??? ???",
+        "en": "Packaging Design"
     },
     {
-        "id":  "pixel-art",
-        "ko":  "픽셀 아트",
-        "en":  "Pixel Art"
+        "id": "book-cover-design",
+        "ko": "??? ???",
+        "en": "Book Cover Design"
     },
     {
-        "id":  "origami",
-        "ko":  "오리가미 스타일",
-        "en":  "Origami Style"
+        "id": "album-cover-design",
+        "ko": "?? ?? ???",
+        "en": "Album Cover Design"
     },
     {
-        "id":  "ukiyoe",
-        "ko":  "우키요에",
-        "en":  "Ukiyo-e"
+        "id": "design-tokens",
+        "ko": "디자인 토큰 시스템",
+        "en": "Design Tokens System"
     },
     {
-        "id":  "sumi-e",
-        "ko":  "수묵화(수미에)",
-        "en":  "Sumi-e"
+        "id": "accessible-design",
+        "ko": "접근성 중심 디자인",
+        "en": "Accessibility-first Design"
     },
     {
-        "id":  "mughal-miniature",
-        "ko":  "무굴 미니어처",
-        "en":  "Mughal Miniature"
+        "id": "inclusive-design",
+        "ko": "인클루시브 디자인",
+        "en": "Inclusive Design"
     },
     {
-        "id":  "persian-illumination",
-        "ko":  "페르시아 세밀화/장식",
-        "en":  "Persian Illumination"
+        "id": "paper-cutout",
+        "ko": "페이퍼 컷아웃",
+        "en": "Paper Cutout"
     },
     {
-        "id":  "byzantine",
-        "ko":  "비잔틴",
-        "en":  "Byzantine"
+        "id": "monoline-illustration",
+        "ko": "모노라인 일러스트",
+        "en": "Monoline Illustration"
     },
     {
-        "id":  "gothic-illumination",
-        "ko":  "고딕 채색사본",
-        "en":  "Gothic Illumination"
+        "id": "isometric-illustration",
+        "ko": "아이소메트릭 일러스트",
+        "en": "Isometric Illustration"
     },
     {
-        "id":  "woodblock-print",
-        "ko":  "목판화",
-        "en":  "Woodblock Print"
+        "id": "pixel-art",
+        "ko": "픽셀 아트",
+        "en": "Pixel Art"
     },
     {
-        "id":  "streamline-moderne",
-        "ko":  "스트림라인 모던",
-        "en":  "Streamline Moderne"
+        "id": "origami",
+        "ko": "오리가미 스타일",
+        "en": "Origami Style"
     },
     {
-        "id":  "googie",
-        "ko":  "구기(Googie)",
-        "en":  "Googie"
+        "id": "ukiyoe",
+        "ko": "우키요에",
+        "en": "Ukiyo-e"
     },
     {
-        "id":  "space-age",
-        "ko":  "스페이스 에이지",
-        "en":  "Space Age"
+        "id": "sumi-e",
+        "ko": "수묵화(수미에)",
+        "en": "Sumi-e"
     },
     {
-        "id":  "psychedelic-poster",
-        "ko":  "사이키델릭 포스터",
-        "en":  "Psychedelic Poster"
+        "id": "mughal-miniature",
+        "ko": "무굴 미니어처",
+        "en": "Mughal Miniature"
     },
     {
-        "id":  "punk-zine",
-        "ko":  "펑크 진/DIY",
-        "en":  "Punk Zine"
+        "id": "persian-illumination",
+        "ko": "페르시아 세밀화/장식",
+        "en": "Persian Illumination"
     },
     {
-        "id":  "skate-graphics",
-        "ko":  "스케이트 그래픽",
-        "en":  "Skate Graphics"
+        "id": "byzantine",
+        "ko": "비잔틴",
+        "en": "Byzantine"
     },
     {
-        "id":  "corporate-minimal",
-        "ko":  "코퍼레이트 미니멀",
-        "en":  "Corporate Minimal"
+        "id": "gothic-illumination",
+        "ko": "고딕 채색사본",
+        "en": "Gothic Illumination"
     },
     {
-        "id":  "luxury-minimal",
-        "ko":  "럭셔리 미니멀",
-        "en":  "Luxury Minimal"
+        "id": "woodblock-print",
+        "ko": "목판화",
+        "en": "Woodblock Print"
     },
     {
-        "id":  "monochrome",
-        "ko":  "모노크롬",
-        "en":  "Monochrome"
+        "id": "streamline-moderne",
+        "ko": "스트림라인 모던",
+        "en": "Streamline Moderne"
     },
     {
-        "id":  "earth-tones",
-        "ko":  "어스 톤",
-        "en":  "Earth Tones"
+        "id": "googie",
+        "ko": "구기(Googie)",
+        "en": "Googie"
     },
     {
-        "id":  "data-art",
-        "ko":  "데이터 아트",
-        "en":  "Data Art"
+        "id": "space-age",
+        "ko": "스페이스 에이지",
+        "en": "Space Age"
     },
     {
-        "id":  "generative-design",
-        "ko":  "제너레이티브 디자인",
-        "en":  "Generative Design"
+        "id": "psychedelic-poster",
+        "ko": "사이키델릭 포스터",
+        "en": "Psychedelic Poster"
     },
     {
-        "id":  "ai-aesthetic",
-        "ko":  "AI 에스테틱",
-        "en":  "AI Aesthetic"
+        "id": "punk-zine",
+        "ko": "펑크 진/DIY",
+        "en": "Punk Zine"
     },
     {
-        "id":  "motion-first",
-        "ko":  "모션 퍼스트 UI",
-        "en":  "Motion-first UI"
+        "id": "skate-graphics",
+        "ko": "스케이트 그래픽",
+        "en": "Skate Graphics"
     },
     {
-        "id":  "scrolltelling",
-        "ko":  "스크롤텔링",
-        "en":  "Scrollytelling"
+        "id": "corporate-minimal",
+        "ko": "코퍼레이트 미니멀",
+        "en": "Corporate Minimal"
     },
     {
-        "id":  "bento-layout",
-        "ko":  "벤토 레이아웃",
-        "en":  "Bento Layout"
+        "id": "luxury-minimal",
+        "ko": "럭셔리 미니멀",
+        "en": "Luxury Minimal"
     },
     {
-        "id":  "glass-neon",
-        "ko":  "글래스 네온",
-        "en":  "Glass + Neon"
+        "id": "monochrome",
+        "ko": "모노크롬",
+        "en": "Monochrome"
     },
     {
-        "id":  "blobmorphism",
-        "ko":  "블롭모피즘",
-        "en":  "Blobmorphism"
+        "id": "earth-tones",
+        "ko": "어스 톤",
+        "en": "Earth Tones"
     },
     {
-        "id":  "aurora-gradient",
-        "ko":  "오로라 그라디언트",
-        "en":  "Aurora Gradient"
+        "id": "data-art",
+        "ko": "데이터 아트",
+        "en": "Data Art"
+    },
+    {
+        "id": "generative-design",
+        "ko": "제너레이티브 디자인",
+        "en": "Generative Design"
+    },
+    {
+        "id": "ai-aesthetic",
+        "ko": "AI 에스테틱",
+        "en": "AI Aesthetic"
+    },
+    {
+        "id": "motion-first",
+        "ko": "모션 퍼스트 UI",
+        "en": "Motion-first UI"
+    },
+    {
+        "id": "scrolltelling",
+        "ko": "스크롤텔링",
+        "en": "Scrollytelling"
+    },
+    {
+        "id": "bento-layout",
+        "ko": "벤토 레이아웃",
+        "en": "Bento Layout"
+    },
+    {
+        "id": "glass-neon",
+        "ko": "글래스 네온",
+        "en": "Glass + Neon"
+    },
+    {
+        "id": "blobmorphism",
+        "ko": "블롭모피즘",
+        "en": "Blobmorphism"
+    },
+    {
+        "id": "aurora-gradient",
+        "ko": "오로라 그라디언트",
+        "en": "Aurora Gradient"
     }
 ];
