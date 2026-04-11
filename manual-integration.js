@@ -16,7 +16,7 @@
       toneLabel: 'Design',
       accent: '#ff8b5e',
       accent2: '#ffd166',
-      launch: './index.html?dir=design',
+      launch: './app.html?dir=design',
       persona: {
         name: '민서',
         goal: '캠페인 무드 방향을 빠르게 좁히고 Pinterest 검색으로 바로 넘겨야 한다.',
@@ -86,7 +86,7 @@
       toneLabel: 'Character',
       accent: '#8ad1ff',
       accent2: '#8affc1',
-      launch: './index.html?dir=character',
+      launch: './app.html?dir=character',
       persona: {
         name: '준호',
         goal: '캐릭터 스타일을 빠르게 좁히고 프롬프트 또는 레퍼런스 검색어를 복사해 작업 툴로 가져간다.',
@@ -155,7 +155,7 @@
       toneLabel: 'Palette',
       accent: '#ffb703',
       accent2: '#ffd6a5',
-      launch: './index.html?dir=palette',
+      launch: './app.html?dir=palette',
       persona: {
         name: '소라',
         goal: '무드에 맞는 팔레트를 찾고 HEX 또는 검색 결과를 바로 다른 도구로 넘긴다.',
@@ -224,7 +224,7 @@
       toneLabel: 'Pose',
       accent: '#9b87f5',
       accent2: '#ffa8e2',
-      launch: './index.html?dir=pose',
+      launch: './app.html?dir=pose',
       persona: {
         name: '태오',
         goal: '지금 필요한 포즈를 고르고 QuickPoses나 Line of Action으로 곧바로 넘긴다.',
@@ -293,7 +293,7 @@
       toneLabel: 'Artist',
       accent: '#58d39b',
       accent2: '#b7ffce',
-      launch: './index.html?dir=artist',
+      launch: './app.html?dir=artist',
       persona: {
         name: '예린',
         goal: '선호 테마와 검색 사이트를 유지한 채 작가 레퍼런스를 반복 탐색한다.',

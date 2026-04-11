@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inspodex Workspace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Inspodex 워크스페이스에서 스타일, 팔레트, 라이팅, 포즈 레퍼런스를 탐색하고 프로젝트 보드, 비교, Export까지 이어서 작업하세요."
+    />
+    <meta name="author" content="ddokkang" />
+    <link rel="canonical" href="https://inspodex.vercel.app/app.html" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+    <meta name="theme-color" content="#f2ede5" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Inspodex Workspace" />
+    <meta
+      property="og:description"
+      content="Inspodex의 실제 작업 화면입니다. 레퍼런스를 탐색하고 프로젝트 보드, 비교, Export까지 이어서 작업하세요."
+    />
+    <meta property="og:url" content="https://inspodex.vercel.app/app.html" />
+    <meta property="og:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <meta property="og:site_name" content="Inspodex" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Inspodex Workspace" />
+    <meta
+      name="twitter:description"
+      content="레퍼런스 탐색, 보드 저장, 비교, Export를 더 조용한 작업 화면에서 이어서 진행하는 Inspodex 워크스페이스."
+    />
+    <meta name="twitter:image" content="https://inspodex.vercel.app/assets/og-image.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="app-page">
+    <div class="app-shell">
+      <header class="panel app-topbar">
+        <div class="app-topbar-copy">
+          <a class="hero-brand-lockup" href="index.html" aria-label="Inspodex 홈으로 이동">
+            <p class="eyebrow">workspace</p>
+            <div class="hero-wordmark">Inspodex</div>
+          </a>
+          <div class="app-heading">
+            <div class="strategy-kicker">directory</div>
+            <h1 id="directoryTitle" class="app-title">Design Style Directory</h1>
+            <p id="directorySubtitle" class="app-lead">디렉토리를 고르고 검색어로 필요한 카드만 남겨보세요.</p>
+          </div>
+        </div>
+        <div class="hero-actions app-actions">
+          <a class="pill" href="index.html">Home</a>
+          <a class="pill" href="persona-feedback.html">Research</a>
+          <label class="theme-picker" aria-label="컬러 테마 선택">
+            <span class="sr-only">테마</span>
+            <select id="themeSelect" class="pill theme-select">
+              <option value="light">주간 (Light)</option>
+              <option value="dark">야간 (Dark)</option>
+              <option value="nord">Nord</option>
+              <option value="dracula">Dracula</option>
+              <option value="solarized-dark">Solarized Dark</option>
+              <option value="solarized-light">Solarized Light</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <div class="page-shell app-page-shell">
+        <section id="workspacePanel" class="panel controls" aria-label="Search panel">
+          <div class="workspace-head">
+            <div>
+              <div class="strategy-kicker">search controls</div>
+              <h2 class="workspace-title">Find references</h2>
+            </div>
+            <p class="workspace-copy">처음에는 범위와 검색어만 고르고, 나머지 옵션은 필요할 때만 여세요.</p>
+          </div>
+          <div class="controls-inner">
+            <div class="search-panel">
+              <section class="search-block" aria-label="Style search">
+                <div class="search-block-head">
+                  <div>
+                    <div class="search-block-title">스타일 찾기</div>
+                    <div class="search-block-subtitle">디렉토리를 먼저 고르고, 필요한 카드만 남겨보세요.</div>
+                  </div>
+                  <div class="search-block-actions">
+                    <button
+                      id="filterShelfToggle"
+                      type="button"
+                      class="pill subtle-toggle filter-shelf-toggle"
+                      aria-expanded="false"
+                      aria-controls="filterShelf"
+                    >
+                      세부 옵션 열기
+                    </button>
+                    <button id="random200Btn" type="button" class="pill">카드섞기</button>
+                    <button id="randomClearBtn" type="button" class="pill" hidden>섞기 해제</button>
+                  </div>
+                </div>
+
+                <div class="flow-steps" id="styleFlowSteps" aria-label="Style flow">
+                  <span class="flow-step" data-step="1">1 디렉토리</span>
+                  <span class="flow-arrow">→</span>
+                  <span class="flow-step" data-step="2">2 검색/필터</span>
+                  <span class="flow-arrow">→</span>
+                  <span class="flow-step" data-step="3">3 카드 클릭</span>
+                </div>
+
+                <div class="controls-row">
+                  <div class="sort-toggle" role="radiogroup" aria-label="Directory" data-style-guide="dir">
+                    <button id="dirAll" type="button" class="seg">통합</button>
+                    <button id="dirDesign" type="button" class="seg active">디자인</button>
+                    <button id="dirCharacter" type="button" class="seg">캐릭터</button>
+                    <button id="dirPhoto" type="button" class="seg">사진/라이팅</button>
+                    <button id="dirArtist" type="button" class="seg">작가</button>
+                    <button id="dirPalette" type="button" class="seg">컬러 팔레트</button>
+                    <button id="dirPose" type="button" class="seg">포즈/동작</button>
+                  </div>
+
+                  <label class="grow">
+                    스타일 검색
+                    <div class="input-wrap" data-style-guide="filter">
+                      <input id="styleSearch" placeholder="예: 미니멀, brutal, 스위스, y2k (/로 포커스 · Esc 지우기)" autocomplete="off" />
+                      <button id="clearSearch" class="input-clear" type="button" aria-label="검색어 지우기" title="지우기 (Esc)">×</button>
+                    </div>
+                  </label>
+                </div>
+
+                <div id="filterShelf" class="filter-shelf" hidden>
+                  <div class="sort-toggle" role="radiogroup" aria-label="Sort">
+                    <button id="sortKo" type="button" class="seg active">가나다순</button>
+                    <button id="sortEn" type="button" class="seg">ABCD순</button>
+                  </div>
+
+                  <nav class="jumpbar" aria-label="Quick jump" data-style-guide="filter">
+                    <div class="jumpbar-row" id="unifiedTypeJump" hidden></div>
+                    <div class="jumpbar-row" id="unifiedMoodJump" hidden></div>
+                    <div class="jumpbar-row" id="unifiedUseJump" hidden></div>
+                    <div class="jumpbar-row" id="unifiedEraJump" hidden></div>
+                    <div class="jumpbar-row" id="poseTypeJump" hidden></div>
+                    <div class="jumpbar-row" id="paletteCategoryJump" hidden></div>
+                    <div class="jumpbar-row" id="characterFacetJump" hidden></div>
+                  </nav>
+                  <div class="jumpbar-actions">
+                    <button id="jumpResetBtn" type="button" class="pill" hidden>필터 해제</button>
+                    <span class="muted jumpbar-hint">Esc로도 검색/필터를 초기화할 수 있어요.</span>
+                  </div>
+
+                  <div class="controls-meta">
+                    <span id="resultCount" class="muted" aria-live="polite"></span>
+                    <span class="muted">/ = 검색 포커스 · Esc = 지우기</span>
+                  </div>
+                </div>
+
+                <div id="activeChips" class="active-chips" aria-label="Active filters"></div>
+                <span id="activeTag" class="sr-only"></span>
+              </section>
+
+              <section class="search-block" aria-label="External search">
+                <div class="search-block-head">
+                  <div>
+                    <div class="search-block-title">키워드로 외부 검색</div>
+                    <div class="search-block-subtitle">사이트를 고르고, 카드나 입력값을 기준으로 바로 확장 검색합니다.</div>
+                  </div>
+                </div>
+
+                <div class="flow-steps" id="flowSteps" aria-label="Search flow">
+                  <span class="flow-step" data-step="1">1 사이트 선택</span>
+                  <span class="flow-arrow">→</span>
+                  <span class="flow-step" data-step="2">2 카드 클릭 또는 직접 입력</span>
+                  <span class="flow-arrow">→</span>
+                  <span class="flow-step" data-step="3">3 검색</span>
+                </div>
+
+                <div id="siteSwitchbar" class="site-switchbar" aria-label="Search sites" data-guide="site"></div>
+
+                <div class="manual-search" aria-label="Manual site search">
+                  <div class="manual-search-row">
+                    <input id="manualSearch" class="manual-search-input" placeholder="카드를 클릭하거나 키워드를 직접 입력하세요" autocomplete="off" data-guide="input" />
+                    <button id="manualSearchBtn" type="button" class="manual-search-btn" data-guide="go">검색</button>
+                  </div>
+                  <div id="manualHint" class="manual-hint">카드를 먼저 클릭하면 검색어가 자동으로 채워져요. 아니면 직접 입력 후 검색하세요.</div>
+
+                  <div class="chip-block" aria-label="Search expansion options" data-guide="expand">
+                    <div class="chip-block-label">검색 확장</div>
+                    <div id="intentChips" class="chip-row" role="group" aria-label="Search expansion chips"></div>
+                    <div id="intentTokenPreview" class="chip-preview" hidden></div>
+                    <div class="search-block-actions" style="margin-top: 8px;">
+                      <button id="intentResetBtn" type="button" class="pill">기본값 복원</button>
+                    </div>
+                    <div class="chip-help">확장 칩은 1개만 적용돼요.</div>
+                  </div>
+
+                  <div id="promptPresetBlock" class="chip-block" aria-label="Image prompt presets" hidden>
+                    <div class="chip-block-label">프롬프트 프리셋</div>
+                    <div id="promptPresetChips" class="chip-row" role="group" aria-label="Prompt preset chips"></div>
+                    <div id="promptPresetPreview" class="chip-preview" hidden></div>
+                    <div class="chip-help">팔레트 카드의 “프롬프트 복사”에 적용돼요.</div>
+                  </div>
+
+                  <div id="manualSelected" class="manual-search-selected"></div>
+                  <div class="manual-search-help">Enter로도 검색할 수 있어요.</div>
+                </div>
+
+                <div id="poseLinks" class="recommend-links" hidden aria-label="Pose reference links">
+                  <div class="recommend-links-head">
+                    <div class="recommend-links-title">포즈 전문 추천 링크</div>
+                    <div class="recommend-links-sub">검색이 아니라 참고용 사이트로 바로 이동해요.</div>
+                  </div>
+                  <div class="recommend-links-row" role="list">
+                    <a role="listitem" class="pill recommend-link" href="https://www.posemaniacs.com/ko/poses" target="_blank" rel="noreferrer" title="3D 인체 포즈 캡처 레퍼런스">Posemaniacs</a>
+                    <a role="listitem" class="pill recommend-link" href="https://justsketch.me/" target="_blank" rel="noreferrer" title="브라우저에서 3D 포즈를 직접 조작">JustSketchMe (3D Pose)</a>
+                    <a role="listitem" class="pill recommend-link" href="https://posemy.art/" target="_blank" rel="noreferrer" title="3D 포즈/조명 참고용 툴">PoseMy.Art (3D Pose)</a>
+                    <a role="listitem" class="pill recommend-link" href="https://magicposer.com/" target="_blank" rel="noreferrer" title="모바일/웹 3D 포즈 설정 툴">Magic Poser</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.adorkastock.com/" target="_blank" rel="noreferrer" title="사진 기반 포즈 레퍼런스(모델)">AdorkaStock</a>
+                    <a role="listitem" class="pill recommend-link" href="https://croquiscafe.com/" target="_blank" rel="noreferrer" title="크로키/제스처 드로잉 레퍼런스">Croquis Cafe</a>
+                  </div>
+                </div>
+
+                <div id="photoLinks" class="recommend-links" hidden aria-label="Photo reference links">
+                  <div class="recommend-links-head">
+                    <div class="recommend-links-title">사진/라이팅 추천 링크</div>
+                    <div class="recommend-links-sub">톤·조명·구도 레퍼런스를 빠르게 모으기 좋은 사이트예요.</div>
+                  </div>
+                  <div class="recommend-links-row" role="list">
+                    <a role="listitem" class="pill recommend-link" href="https://unsplash.com/" target="_blank" rel="noreferrer">Unsplash</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.pexels.com/" target="_blank" rel="noreferrer">Pexels</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.flickr.com/search/" target="_blank" rel="noreferrer">Flickr Search</a>
+                    <a role="listitem" class="pill recommend-link" href="https://film-grab.com/" target="_blank" rel="noreferrer">FilmGrab</a>
+                    <a role="listitem" class="pill recommend-link" href="https://shotdeck.com/" target="_blank" rel="noreferrer">ShotDeck (Paid)</a>
+                  </div>
+                </div>
+
+                <div id="paletteLinks" class="recommend-links" hidden aria-label="Color palette links">
+                  <div class="recommend-links-head">
+                    <div class="recommend-links-title">컬러 추천 링크</div>
+                    <div class="recommend-links-sub">팔레트 만들기/탐색에 유용한 사이트예요.</div>
+                  </div>
+                  <div class="recommend-links-row" role="list">
+                    <a role="listitem" class="pill recommend-link" href="https://coolors.co/" target="_blank" rel="noreferrer">Coolors</a>
+                    <a role="listitem" class="pill recommend-link" href="https://color.adobe.com/" target="_blank" rel="noreferrer">Adobe Color</a>
+                    <a role="listitem" class="pill recommend-link" href="https://colorhunt.co/" target="_blank" rel="noreferrer">Color Hunt</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.happyhues.co/" target="_blank" rel="noreferrer">Happy Hues</a>
+                    <a role="listitem" class="pill recommend-link" href="https://uigradients.com/" target="_blank" rel="noreferrer">UI Gradients</a>
+                    <a role="listitem" class="pill recommend-link" href="https://paletton.com/" target="_blank" rel="noreferrer">Paletton</a>
+                  </div>
+                </div>
+
+                <div id="characterLinks" class="recommend-links" hidden aria-label="Character reference links">
+                  <div class="recommend-links-head">
+                    <div class="recommend-links-title">캐릭터 추천 사이트</div>
+                    <div class="recommend-links-sub">추가 레퍼런스를 빠르게 탐색할 수 있는 사이트예요.</div>
+                  </div>
+                  <div class="recommend-links-row" role="list">
+                    <a role="listitem" class="pill recommend-link" href="https://www.deviantart.com/" target="_blank" rel="noreferrer">DeviantArt</a>
+                    <a role="listitem" class="pill recommend-link" href="https://sketchfab.com/" target="_blank" rel="noreferrer">Sketchfab</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.artstation.com/" target="_blank" rel="noreferrer">ArtStation</a>
+                  </div>
+                </div>
+
+                <div id="artistLinks" class="recommend-links" hidden aria-label="Artist reference links">
+                  <div class="recommend-links-head">
+                    <div class="recommend-links-title">작가 레퍼런스 추천 링크</div>
+                    <div class="recommend-links-sub">영화·사진·일러스트·회화 작가의 스타일을 넓게 탐색하기 좋은 사이트예요.</div>
+                  </div>
+                  <div class="recommend-links-row" role="list">
+                    <a role="listitem" class="pill recommend-link" href="https://www.wikipedia.org/" target="_blank" rel="noreferrer">Wikipedia</a>
+                    <a role="listitem" class="pill recommend-link" href="https://letterboxd.com/" target="_blank" rel="noreferrer">Letterboxd</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.magnumphotos.com/" target="_blank" rel="noreferrer">Magnum Photos</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.wikiart.org/" target="_blank" rel="noreferrer">WikiArt</a>
+                    <a role="listitem" class="pill recommend-link" href="https://www.imdb.com/" target="_blank" rel="noreferrer">IMDb</a>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel grid-panel" aria-label="Style thumbnails">
+          <div class="workspace-head workspace-head-grid">
+            <div>
+              <div class="strategy-kicker">results</div>
+              <h2 class="workspace-title">Reference results</h2>
+            </div>
+            <p class="workspace-copy">카드를 고른 뒤 상세 패널에서 보드 저장, 비교, 다음 액션으로 이어가세요.</p>
+          </div>
+          <div class="grid-meta" aria-label="Results and active filters">
+            <div class="grid-meta-left">
+              <div id="gridCount" class="grid-count" aria-live="polite" aria-atomic="true"></div>
+              <span id="filterApplied" class="badge" hidden>필터 적용됨</span>
+            </div>
+            <div class="grid-meta-right">
+              <div id="gridTools" class="grid-tools" aria-label="Tools"></div>
+              <div id="gridStatus" class="grid-status muted" aria-live="polite"></div>
+            </div>
+            <div id="gridChipsHost" class="grid-chips" aria-label="Active filters"></div>
+          </div>
+          <div id="styleGrid" class="style-grid" role="grid" aria-label="Style cards"></div>
+          <div id="loadMore" class="load-more" aria-live="polite" hidden>스크롤하면 더 불러와요…</div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="popup" class="popup" hidden>
+      <div class="popup-backdrop" data-popup-close="true"></div>
+      <div class="popup-dialog" role="dialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupDesc">
+        <div id="popupTitle" class="popup-title">복사 완료</div>
+        <div id="popupDesc" class="popup-desc">이미지 생성툴에 붙여넣기 → 생성</div>
+        <div class="popup-actions">
+          <button id="popupClose" type="button" class="pill">확인</button>
+        </div>
+      </div>
+    </div>
+    <div id="detailPanel" class="detail-panel" hidden>
+      <div class="detail-panel-backdrop" data-detail-close="true"></div>
+      <div class="detail-panel-dialog" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-describedby="detailSummary">
+        <button id="detailClose" class="detail-close" type="button" aria-label="상세 패널 닫기">×</button>
+        <div class="detail-panel-body">
+          <section class="detail-hero">
+            <div class="detail-thumb-wrap">
+              <img id="detailThumb" class="detail-thumb" alt="" />
+            </div>
+            <div class="detail-heading">
+              <div id="detailType" class="detail-type"></div>
+              <h2 id="detailTitle" class="detail-title">Reference detail</h2>
+              <div id="detailSubtitle" class="detail-subtitle"></div>
+              <p id="detailSummary" class="detail-summary"></p>
+              <div id="detailFacts" class="detail-chip-row" aria-label="Reference facts"></div>
+            </div>
+          </section>
+          <section class="detail-section">
+            <div class="detail-section-title">설명</div>
+            <div class="detail-note-grid">
+              <article class="detail-note">
+                <div class="detail-note-label">핵심 특징</div>
+                <div id="detailSignals" class="detail-note-list" aria-label="Key signals"></div>
+              </article>
+              <article class="detail-note">
+                <div class="detail-note-label">이럴 때 참고</div>
+                <div id="detailUseCases" class="detail-note-list" aria-label="Reference use cases"></div>
+              </article>
+              <article class="detail-note detail-note-wide">
+                <div class="detail-note-label">확장 키워드</div>
+                <div id="detailKeywords" class="detail-token-row" aria-label="Search keywords"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="detail-section">
+            <div class="detail-section-title">태그</div>
+            <div id="detailTags" class="detail-chip-row" aria-label="Reference tags"></div>
+          </section>
+
+          <section id="detailPaletteBlock" class="detail-section" hidden>
+            <div class="detail-section-title">팔레트</div>
+            <div id="detailPalette" class="detail-chip-row" aria-label="Palette colors"></div>
+          </section>
+
+          <section id="detailFiguresBlock" class="detail-section" hidden>
+            <div class="detail-section-title">연관 인물/출처</div>
+            <div id="detailFigures" class="detail-link-list" aria-label="Related figures"></div>
+          </section>
+
+          <section class="detail-section">
+            <div class="detail-section-title">작업 액션</div>
+            <div class="detail-action-fields">
+              <article class="detail-copy-card">
+                <div class="detail-copy-head">
+                  <div id="detailQueryLabel" class="detail-copy-title">검색어</div>
+                  <button id="detailQueryCopy" type="button" class="detail-copy-btn">복사</button>
+                </div>
+                <div id="detailQueryText" class="detail-copy-text" aria-label="Search query"></div>
+              </article>
+              <article class="detail-copy-card">
+                <div class="detail-copy-head">
+                  <div class="detail-copy-title">프롬프트</div>
+                  <button id="detailPromptCopy" type="button" class="detail-copy-btn">복사</button>
+                </div>
+                <div id="detailPromptText" class="detail-copy-text detail-copy-text-prompt" aria-label="Prompt text"></div>
+              </article>
+            </div>
+            <div id="detailActions" class="detail-actions" aria-label="Detail actions"></div>
+          </section>
+
+          <section id="detailSameTypeBlock" class="detail-section" hidden>
+            <div class="detail-section-title">비슷한 레퍼런스</div>
+            <div id="detailSameType" class="detail-related-list" aria-label="Related references"></div>
+          </section>
+
+          <section id="detailCrossTypeBlock" class="detail-section" hidden>
+            <div class="detail-section-title">다른 타입의 연관 레퍼런스</div>
+            <div id="detailCrossType" class="detail-related-groups" aria-label="Cross-type related references"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <script src="reference-ko-map.js"></script>
+    <script src="reference-data.js"></script>
+    <script src="palettes-data.js"></script>
+    <script src="poses-data.js"></script>
+    <script src="thumb-manifest.js"></script>
+    <script src="inspodex-core.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

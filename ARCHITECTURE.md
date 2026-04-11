@@ -6,7 +6,7 @@ Inspodex is a static single-page app. The browser loads HTML, CSS, three data so
 
 ## Boot and load order
 
-[`index.html`](/e:/@vscode/Inspodex/index.html) loads assets in this order:
+[`app.html`](/Users/macmini/Vibecoding/inspodex/app.html) loads assets in this order:
 
 1. [`reference-data.js`](/e:/@vscode/Inspodex/reference-data.js)
 2. [`palettes-data.js`](/e:/@vscode/Inspodex/palettes-data.js)
@@ -129,7 +129,7 @@ This is especially relevant right now because `assets/artist-thumbs`, `assets/pa
 
 ## Verified observations
 
-- [`index.html`](/e:/@vscode/Inspodex/index.html) does load data files before [`script.js`](/e:/@vscode/Inspodex/script.js).
+- [`app.html`](/Users/macmini/Vibecoding/inspodex/app.html) does load data files before [`script.js`](/Users/macmini/Vibecoding/inspodex/script.js).
 - `loadStyles()` in [`script.js`](/e:/@vscode/Inspodex/script.js) does map each `directoryMode` to the expected global dataset.
 - UTF-8 reads of sampled files display Korean correctly in PowerShell when `-Encoding UTF8` is specified.
 - The earlier garbled output appears to be a shell decoding issue, not confirmed source corruption.

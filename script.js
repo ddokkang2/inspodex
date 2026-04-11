@@ -117,6 +117,8 @@
     gridStatus: document.getElementById('gridStatus'),
     search: document.getElementById('styleSearch'),
     clearSearch: document.getElementById('clearSearch'),
+    filterShelf: document.getElementById('filterShelf'),
+    filterShelfToggle: document.getElementById('filterShelfToggle'),
     jumpResetBtn: document.getElementById('jumpResetBtn'),
     jumpExpandBtn: document.getElementById('jumpExpandBtn'),
     sortKo: document.getElementById('sortKo'),
@@ -202,6 +204,7 @@
   let panelPinned = true;
   let siteTouched = false;
   let jumpbarExpanded = false;
+  let filterShelfOpen = false;
   let advancedSearchOpen = false;
   let detailQuerySeedMode = 'quick';
   let detailExpansionKey = '';
@@ -605,6 +608,40 @@
     }
   }
 
+  function hasSecondaryControlState() {
+    return Boolean(
+      sortMode !== 'recommended' ||
+      activeTag ||
+      activeEnInitial ||
+      activeDigitInitial ||
+      activePoseType ||
+      activePoseVariant ||
+      activePaletteCategory ||
+      activePalettePreset ||
+      activeCharacterFacet ||
+      activeDesignFacet ||
+      activePhotoFacet ||
+      activeArtistFacet ||
+      activeUnifiedType ||
+      activeUnifiedMood ||
+      activeUnifiedUse ||
+      activeUnifiedEra
+    );
+  }
+
+  function setFilterShelfOpen(open) {
+    filterShelfOpen = Boolean(open);
+    if (dom.filterShelf) dom.filterShelf.hidden = !filterShelfOpen;
+    if (dom.filterShelfToggle) {
+      dom.filterShelfToggle.setAttribute('aria-expanded', filterShelfOpen ? 'true' : 'false');
+      dom.filterShelfToggle.textContent = filterShelfOpen ? '세부 옵션 닫기' : '세부 옵션 열기';
+    }
+  }
+
+  function syncFilterShelf() {
+    setFilterShelfOpen(filterShelfOpen || hasSecondaryControlState());
+  }
+
   function jumpRows() {
     return [
       dom.unifiedTypeJump,
@@ -695,10 +732,10 @@
   function getPreferredTheme() {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved && THEMES.includes(saved)) return saved;
-    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    return 'light';
   }
   function applyTheme(next) {
-    const theme = (next && THEMES.includes(next)) ? next : 'dark';
+    const theme = (next && THEMES.includes(next)) ? next : 'light';
     document.body.dataset.theme = theme;
     if (dom.themeSelect) dom.themeSelect.value = theme;
     localStorage.setItem(THEME_KEY, theme);
@@ -797,13 +834,13 @@
   }
 
   function directorySubtitleText(mode = directoryMode) {
-    if (mode === 'all') return '전체 레퍼런스를 한 번에 검색하고, 타입/무드/용도/시대 facet으로 좁혀보세요.';
-    if (mode === 'artist') return '영화, 사진, 일러스트, 애니메이션, 회화 작가의 시각 언어를 이름 기준으로 찾고 확장 검색하세요.';
-    if (mode === 'photo') return '사진 장르와 라이팅 레퍼런스를 고르고, 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.';
-    if (mode === 'palette') return '팔레트를 고르고, 색 조합과 활용 예시를 외부 사이트에서 바로 확장 검색하세요.';
-    if (mode === 'pose') return '동작과 각도 레퍼런스를 고르고, 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.';
-    if (mode === 'character') return '캐릭터 스타일을 고르고, 표현 방식과 시각 언어를 외부 사이트에서 바로 확장 검색하세요.';
-    return '스타일을 고르고(필터), 선택한 키워드로 외부 사이트에서 바로 확장 검색하세요.';
+    if (mode === 'all') return '전체 디렉토리에서 바로 찾고, 필요하면 타입과 무드로 좁혀보세요.';
+    if (mode === 'artist') return '작가 이름이나 시각 언어로 레퍼런스를 빠르게 좁혀보세요.';
+    if (mode === 'photo') return '장르와 조명 톤을 기준으로 필요한 레퍼런스만 남겨보세요.';
+    if (mode === 'palette') return '색 조합과 분위기를 기준으로 팔레트를 골라보세요.';
+    if (mode === 'pose') return '동작과 각도를 나눠서 포즈 레퍼런스를 좁혀보세요.';
+    if (mode === 'character') return '표현 방식과 무드로 캐릭터 레퍼런스를 좁혀보세요.';
+    return '디렉토리를 고르고 검색어로 필요한 카드만 남겨보세요.';
   }
 
   function sourceDataForDirectory(mode) {
@@ -7856,6 +7893,7 @@
       applyDirectory(getPreferredDirectory());
       applySite(getPreferredSite());
       setAdvancedSearchOpen(false);
+      setFilterShelfOpen(false);
       updateAriaRadio(dom.sortKo, sortMode === 'recommended');
       updateAriaRadio(dom.sortEn, sortMode === 'en');
       loadStyles();
@@ -7904,6 +7942,11 @@
       dom.jumpExpandBtn.addEventListener('click', () => {
         jumpbarExpanded = !jumpbarExpanded;
         syncJumpbarVisibility();
+      });
+    }
+    if (dom.filterShelfToggle) {
+      dom.filterShelfToggle.addEventListener('click', () => {
+        setFilterShelfOpen(!(dom.filterShelf && !dom.filterShelf.hidden));
       });
     }
     if (dom.advancedSearchToggle) {
@@ -8113,7 +8156,6 @@
       buildJumpBars();
       render();
     });
-
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (query) {
@@ -8469,6 +8511,7 @@
     }
 
     updateStyleGuideStep();
+    safeUi('syncFilterShelf', () => syncFilterShelf());
     if (dom.activeTag) dom.activeTag.textContent = activeTag ? `Tag: ${activeTag}` : '';
     safeUi('renderActiveChips', () => renderActiveChips());
     safeUi('renderBinderActiveChip', () => renderBinderActiveChip());

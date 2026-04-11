@@ -1,63 +1,82 @@
 # Inspodex
 
-Inspodex is a static reference hub for browsing visual inspiration and jumping into external search. It groups references into six directories:
+Inspodex is an AI-friendly visual reference workspace for solo creators and freelance designers. It helps users explore references across styles, palettes, lighting, poses, and artists, then move those references into project boards, comparison views, and exportable prompt/search packs.
 
-- Design styles
-- Character styles
-- Photo and lighting styles
-- Artist styles
-- Color palettes
-- Pose and motion references
+The product is intentionally positioned as a workspace, not just a browsing archive. The core loop is:
 
-The app runs directly in the browser without a build step. Data is loaded from local `*-data.js` files, rendered into cards, and connected to external search targets such as Pinterest, Google Images, Behance, ArtStation, and Coolors depending on the active directory.
+1. Explore references
+2. Save cards into a board
+3. Compare and compress the direction
+4. Export prompts, search packs, or notes into the next tool
+
+## What is in the repo
+
+- `index.html`: landing page and product entry
+- `app.html`: focused workspace surface for browsing, saving, comparing, and exporting references
+- `script.js`: application state, directory switching, filtering, board behavior, compare logic, export actions, clipboard actions, and persistence
+- `styles.css`: main visual system and UI styling
+- `persona-feedback.html`: research-style persona feedback board
+- `persona-feedback.js`: persona simulation data and infographic rendering logic
+- `persona-feedback.css`: persona feedback board styling
+- `reference-data.js`, `palettes-data.js`, `poses-data.js`: runtime reference catalogs used by the app
+- `inspodex-core.js`: core helpers used by tests
+- `test/inspodex-core.test.js`: lightweight automated test coverage
+
+## Product direction
+
+Current strategy documents in the repo:
+
+- [`PRODUCT_STRATEGY.md`](/Users/macmini/Vibecoding/inspodex/PRODUCT_STRATEGY.md)
+- [`POSITIONING_MVP_PLAN.md`](/Users/macmini/Vibecoding/inspodex/POSITIONING_MVP_PLAN.md)
+- [`SITE_DIRECTION_BLUEPRINT.md`](/Users/macmini/Vibecoding/inspodex/SITE_DIRECTION_BLUEPRINT.md)
+- [`.agents/product-marketing-context.md`](/Users/macmini/Vibecoding/inspodex/.agents/product-marketing-context.md)
+
+The current recommended direction is:
+
+> Inspodex = a visual direction workspace for AI-based creators who need to move from scattered references to workable boards and prompts quickly.
 
 ## Run locally
 
-Open the site with a static server on port `8080` to match [`.vscode/launch.json`](/e:/@vscode/Inspodex/.vscode/launch.json):
+Because the project is static, any simple local server works.
 
-```powershell
-cd e:\@vscode\Inspodex
-python -m http.server 8080
+```bash
+cd /Users/macmini/Vibecoding/inspodex
+python3 -m http.server 8080
 ```
 
 Then open `http://localhost:8080`.
 
-## Project structure
+## Current page structure
 
-- [`index.html`](/e:/@vscode/Inspodex/index.html): page shell, search panel, external search UI, grid container, toast and popup
-- [`script.js`](/e:/@vscode/Inspodex/script.js): directory switching, state, filtering, rendering, clipboard actions, external search URLs, generated SVG fallbacks
-- [`styles.css`](/e:/@vscode/Inspodex/styles.css): layout and component styling
-- [`reference-data.js`](/e:/@vscode/Inspodex/reference-data.js): curated runtime data for design, character, photo, and artist directories
-- [`palettes-data.js`](/e:/@vscode/Inspodex/palettes-data.js): generated palette catalog
-- [`poses-data.js`](/e:/@vscode/Inspodex/poses-data.js): generated pose catalog
-- [`styles-data.js`](/e:/@vscode/Inspodex/styles-data.js), [`characters-data.js`](/e:/@vscode/Inspodex/characters-data.js), [`photo-data.js`](/e:/@vscode/Inspodex/photo-data.js): legacy source files retained in the repo but not loaded by `index.html`
-- [`tools/`](/e:/@vscode/Inspodex/tools): thumbnail fetch and generation scripts
+- `/`: landing page
+- `/app.html`: workspace
+- `/persona-feedback.html`: persona simulation and research board
 
-## Behavior summary
+## Key behavior summary
 
-- `index.html` loads the data files first and [`script.js`](/e:/@vscode/Inspodex/script.js) last.
-- `script.js` normalizes the active directory into a single in-memory `STYLES` list via `loadStyles()`.
-- Search, tag filters, initials jump bars, palette and pose quick filters, prompt copying, and `localStorage` persistence all live in [`script.js`](/e:/@vscode/Inspodex/script.js).
-- Grid rendering is incremental with `BATCH_SIZE = 40`.
+- `app.html` loads the data files first and `script.js` last
+- `script.js` normalizes the active directory into a single in-memory list via `loadStyles()`
+- search, filters, jump bars, board persistence, compare logic, export helpers, and theme persistence live in `script.js`
+- the reference grid renders incrementally with `BATCH_SIZE = 40`
 
-## Current notes
+## Development notes
 
-- The source files are UTF-8. Earlier garbled Korean output came from terminal decoding, not from the sampled file contents.
-- [`assets/artist-thumbs`](/e:/@vscode/Inspodex/assets) does not currently exist.
-- [`assets/palette-thumbs`](/e:/@vscode/Inspodex/assets) does not currently exist.
-- [`assets/pose-thumbs`](/e:/@vscode/Inspodex/assets) does not currently exist.
-- Missing artist, palette, and pose thumbnails are handled by generated SVG fallback logic in [`script.js`](/e:/@vscode/Inspodex/script.js).
+- The app runs directly in the browser without a build step
+- Data is stored in local `*-data.js` files
+- Local persistence relies on `localStorage`
+- Missing thumbnails fall back to generated SVG assets when needed
 
-## SEO and deployment
+## Deployment
 
-If you deploy under a different domain, update these files:
+If you deploy under a different domain, update:
 
-- [`index.html`](/e:/@vscode/Inspodex/index.html)
-- [`robots.txt`](/e:/@vscode/Inspodex/robots.txt)
-- [`sitemap.xml`](/e:/@vscode/Inspodex/sitemap.xml)
+- [`index.html`](/Users/macmini/Vibecoding/inspodex/index.html)
+- [`app.html`](/Users/macmini/Vibecoding/inspodex/app.html)
+- [`robots.txt`](/Users/macmini/Vibecoding/inspodex/robots.txt)
+- [`sitemap.xml`](/Users/macmini/Vibecoding/inspodex/sitemap.xml)
 
-The default production URL in the repo is `https://inspodex.vercel.app/`.
+The current production URL in the repo is `https://inspodex.vercel.app/`.
 
-## More detail
+## Architecture reference
 
-Architecture and code flow notes are documented in [`ARCHITECTURE.md`](/e:/@vscode/Inspodex/ARCHITECTURE.md).
+More implementation detail lives in [`ARCHITECTURE.md`](/Users/macmini/Vibecoding/inspodex/ARCHITECTURE.md).
