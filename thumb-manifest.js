@@ -13,6 +13,11 @@ window.THUMB_MANIFEST = {
     "standing-three-quarter": "png",
     "walking-front": "png"
   },
+  "palette": {
+    "gotham-noir": "png",
+    "matrix-green": "png",
+    "wes-anderson-pastel": "png"
+  },
   "design": {
     "3d-illustration": "jpg",
     "accessible-design": "png",
