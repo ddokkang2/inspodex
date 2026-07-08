@@ -4,6 +4,9 @@
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "bake": "node tools/build-reference-index.mjs"
+    "bake": "node tools/build-reference-index.mjs",
+    "thumb:prompts": "node tools/build-thumb-prompts.mjs",
+    "thumb:manifest": "node tools/update-thumb-manifest.mjs",
+    "thumb:workflow": "npm run thumb:prompts && npm run thumb:manifest"
   }
 }
