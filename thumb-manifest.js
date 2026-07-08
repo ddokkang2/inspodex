@@ -2,6 +2,9 @@ window.THUMB_MANIFEST = {
   "pose": {
     "crouching-dynamic": "png",
     "jumping-dynamic": "png",
+    "kneeling-front": "png",
+    "pointing-front": "png",
+    "reaching-up": "png",
     "running-dynamic": "png",
     "sitting-front": "png",
     "standing-back": "png",
