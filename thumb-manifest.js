@@ -18,6 +18,11 @@ window.THUMB_MANIFEST = {
     "matrix-green": "png",
     "wes-anderson-pastel": "png"
   },
+  "artist": {
+    "mucha-art-nouveau": "png",
+    "picasso-cubist": "png",
+    "warhol-pop-art": "png"
+  },
   "design": {
     "3d-illustration": "jpg",
     "accessible-design": "png",
