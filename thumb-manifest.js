@@ -227,6 +227,14 @@ window.THUMB_MANIFEST = {
     "woodblock-print": "jpg",
     "y2k": "jpg",
     "zine": "jpg"
+    "data-visualization": "png",
+    "information-design": "png",
+    "infographic": "png",
+    "iconography-system": "png",
+    "wayfinding-system": "png",
+    "packaging-design": "png",
+    "book-cover-design": "png",
+    "album-cover-design": "png"
   },
   "character": {
     "16bit": "jpg",
