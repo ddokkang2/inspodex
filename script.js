@@ -1,6 +1,11 @@
 (() => {
   let STYLES = [];
 
+  // 0단계 계측: analytics.js(InspodexMetrics)가 없으면 조용히 무시된다.
+  const metrics = (event, props = {}) => {
+    try { window.InspodexMetrics?.track(event, props); } catch { /* best-effort */ }
+  };
+
   const KEY_FIGURES = {
     renaissance: ['Leonardo da Vinci', 'Michelangelo', 'Raphael'],
     baroque: ['Gian Lorenzo Bernini', 'Caravaggio'],
@@ -1497,6 +1502,7 @@
 
   function selectStyle(style, { openInspector = true } = {}) {
     if (!style) return;
+    metrics('card_select', { id: style.id, dir: directoryMode });
     selectedStyleId = style.id;
 
     if (dom.grid) {
@@ -3121,6 +3127,8 @@
     const useTarget = uniqueText(style?.useCases || [])[0] || (mode === 'design' ? 'campaign key visual' : mode === 'character' ? 'character sheet' : mode === 'photo' ? 'editorial photo concept' : mode === 'palette' ? 'moodboard board' : mode === 'pose' ? 'key pose scene' : 'reference board');
 
     const generate = (() => {
+      const bakedPrompt = String(style?.bakedPrompt || (typeof window !== 'undefined' && window.REFERENCE_INDEX?.[style?.id]?.promptTemplate) || '').trim();
+      if (bakedPrompt) return bakedPrompt;
       if (mode === 'design') return `Create a polished visual design reference for ${title}. Build a clear hierarchy, a strong type system, a deliberate spacing rhythm, and one dominant graphic gesture. ${context}`.trim();
       if (mode === 'artist') return `Create an original image that captures the visual language associated with ${title}. Focus on composition rhythm, palette, medium texture, and recurring motifs without directly copying a specific work. ${context}`.trim();
       if (mode === 'character') return `Create a character style reference for ${title}. Show a readable silhouette, clear costume logic, strong material separation, and a finished rendering approach. ${context}`.trim();
@@ -3690,28 +3698,36 @@
   }
 
   function enrichStyle(s, mode = directoryMode, curatedRank = 0) {
+    // 1단계: 빌드 타임에 구운 정적 데이터(data/references-index.js)가 있으면
+    // 런타임 추론보다 우선한다. (npm run bake로 재생성, JSON 검수 가능)
+    const baked = (typeof window !== 'undefined' && window.REFERENCE_INDEX)
+      ? window.REFERENCE_INDEX[s.id]
+      : null;
     const tags = uniq([...(Array.isArray(s.tags) ? s.tags : []), ...deriveTags(s, mode)]).slice(0, 3);
     const overviewCandidate = String(s.overview || NOTE_OVERRIDES[s.id] || s.note || '').trim();
-    const overview = (overviewCandidate && overviewCandidate.split('\n').filter(Boolean).length >= 3)
-      ? overviewCandidate
-      : buildOverview({ ...s, tags, characteristics: s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' ')) }, mode);
+    const overview = String(baked?.overview || '').trim()
+      || ((overviewCandidate && overviewCandidate.split('\n').filter(Boolean).length >= 3)
+        ? overviewCandidate
+        : buildOverview({ ...s, tags, characteristics: s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' ')) }, mode));
     const figures = s.figures || KEY_FIGURES[s.id] || [];
     const characteristics = s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' '));
     const q = s.q || buildQuery(s, mode);
     const colors = (mode === 'palette' && Array.isArray(s.colors))
       ? normalizePaletteColors(s.colors)
       : s.colors;
-    const eras = Array.isArray(s.eras) && s.eras.length
-      ? uniqueText(s.eras).slice(0, 2)
-      : uniqueText([classifyEra(s, mode)]).slice(0, 2);
-    const regions = Array.isArray(s.regions) && s.regions.length
-      ? uniqueText(s.regions).slice(0, 3)
-      : uniqueText(classifyRegions(s, mode)).slice(0, 3);
-    const aliases = inferAliases(s, mode);
-    const searchTokens = inferSearchTokens({ ...s, tags, characteristics, q }, mode);
-    const moods = inferMoods({ ...s, tags }, mode);
-    const useCases = inferUseCases({ ...s, tags }, mode);
-    const media = inferMedia({ ...s, tags }, mode);
+    const eras = (baked?.eras?.length ? uniqueText(baked.eras).slice(0, 2)
+      : (Array.isArray(s.eras) && s.eras.length
+        ? uniqueText(s.eras).slice(0, 2)
+        : uniqueText([classifyEra(s, mode)]).slice(0, 2)));
+    const regions = (baked?.regions?.length ? uniqueText(baked.regions).slice(0, 3)
+      : (Array.isArray(s.regions) && s.regions.length
+        ? uniqueText(s.regions).slice(0, 3)
+        : uniqueText(classifyRegions(s, mode)).slice(0, 3)));
+    const aliases = (baked?.aliases?.length ? baked.aliases : inferAliases(s, mode));
+    const searchTokens = (baked?.searchTokens?.length ? baked.searchTokens : inferSearchTokens({ ...s, tags, characteristics, q }, mode));
+    const moods = (baked?.moods?.length ? baked.moods : inferMoods({ ...s, tags }, mode));
+    const useCases = (baked?.useCases?.length ? baked.useCases : inferUseCases({ ...s, tags }, mode));
+    const media = (baked?.media?.length ? baked.media : inferMedia({ ...s, tags }, mode));
     const sourceLinks = buildSourceLinks(figures);
     return {
       ...s,
@@ -3731,7 +3747,9 @@
       eras,
       regions,
       media,
-      sourceLinks
+      sourceLinks,
+      relatedIds: Array.isArray(baked?.relatedIds) ? baked.relatedIds : [],
+      bakedPrompt: String(baked?.promptTemplate || '')
     };
   }
 
@@ -3748,6 +3766,13 @@
   function relatedStylesFor(styleId, limit = 12) {
     const base = STYLES.find((s) => s.id === styleId);
     if (!base) return [];
+    if (Array.isArray(base.relatedIds) && base.relatedIds.length) {
+      const byId = new Map(STYLES.map((s) => [s.id, s]));
+      const bakedRelated = base.relatedIds
+        .map((id) => byId.get(id))
+        .filter((s) => s && (!base.type || s.type === base.type));
+      if (bakedRelated.length) return bakedRelated.slice(0, limit);
+    }
     const baseTags = new Set(base.tags || []);
     const scored = STYLES
       .filter((s) => s.id !== styleId)
@@ -4258,6 +4283,24 @@
   }
 
   function crossRelatedReferences(style, limitPerType = 2) {
+    if (Array.isArray(style.relatedIds) && style.relatedIds.length) {
+      const byId = new Map(allReferences().map((item) => [item.id, item]));
+      const grouped = new Map();
+      style.relatedIds.forEach((id) => {
+        const item = byId.get(id);
+        if (!item || item.type === style.type) return;
+        const list = grouped.get(item.type) || [];
+        if (list.length < limitPerType) {
+          list.push(item);
+          grouped.set(item.type, list);
+        }
+      });
+      const bakedGroups = DATA_DIRECTORY_MODES
+        .filter((mode) => mode !== style.type)
+        .map((mode) => ({ type: mode, items: grouped.get(mode) || [] }))
+        .filter((group) => group.items.length > 0);
+      if (bakedGroups.length) return bakedGroups;
+    }
     const groups = new Map();
     allReferences()
       .filter((candidate) => candidate.id !== style.id && candidate.type !== style.type)
@@ -4410,6 +4453,7 @@
     const q = String(queryText || '').trim();
     if (!q) return;
     const site = SITES[siteKey] || SITES.pinterest;
+    metrics('external_search', { site: siteKey, dir: directoryMode });
     window.open(site.url(q), '_blank', 'noopener,noreferrer');
   }
 
@@ -4844,6 +4888,7 @@
     binderState.decks.push(deck);
     binderState.selectedDeckId = deck.id;
     saveBinderState();
+    metrics('board_create', { decks: binderState.decks.length });
     return deck;
   }
 
@@ -4883,6 +4928,7 @@
     const exists = list.includes(key);
     binderState.favorites = exists ? list.filter((id) => id !== key) : [...list, key];
     saveBinderState();
+    metrics(exists ? 'favorite_remove' : 'favorite_add', { id: key });
     return !exists;
   }
 
@@ -4896,6 +4942,7 @@
     deck.updatedAt = Date.now();
     binderState.selectedDeckId = deck.id;
     saveBinderState();
+    metrics(exists ? 'board_unsave' : 'board_save', { id: key, deck: deck.id });
     return !exists;
   }
 
@@ -5119,6 +5166,7 @@
   }
 
   function deckExportBundle(deck) {
+    metrics('export_pack', { deck: deck?.id || '', cards: (deck?.cardIds || []).length });
     const styles = deckStyles(deck);
     const typeLabels = uniqueText(styles.map((style) => directoryLabel(styleTypeKey(style)))).slice(0, 4);
     const typePromptTerms = uniqueText(styles.map((style) => directoryShortLabel(styleTypeKey(style)).toLowerCase())).slice(0, 4);
@@ -7550,28 +7598,36 @@
   }
 
   function enrichStyle(s, mode = directoryMode, curatedRank = 0, seriesIndex = 0, seriesTotal = 0) {
+    // 1단계: 빌드 타임에 구운 정적 데이터(data/references-index.js)가 있으면
+    // 런타임 추론보다 우선한다. (npm run bake로 재생성, JSON 검수 가능)
+    const baked = (typeof window !== 'undefined' && window.REFERENCE_INDEX)
+      ? window.REFERENCE_INDEX[s.id]
+      : null;
     const tags = uniq([...(Array.isArray(s.tags) ? s.tags : []), ...deriveTags(s, mode)]).slice(0, 3);
     const overviewCandidate = String(s.overview || NOTE_OVERRIDES[s.id] || s.note || '').trim();
-    const overview = (overviewCandidate && overviewCandidate.split('\n').filter(Boolean).length >= 3)
-      ? overviewCandidate
-      : buildOverview({ ...s, tags, characteristics: s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' ')) }, mode);
+    const overview = String(baked?.overview || '').trim()
+      || ((overviewCandidate && overviewCandidate.split('\n').filter(Boolean).length >= 3)
+        ? overviewCandidate
+        : buildOverview({ ...s, tags, characteristics: s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' ')) }, mode));
     const figures = s.figures || KEY_FIGURES[s.id] || [];
     const characteristics = s.characteristics || tags.slice(0, 3).map((t) => t.replace(/-/g, ' '));
     const q = s.q || buildQuery(s, mode);
     const colors = (mode === 'palette' && Array.isArray(s.colors))
       ? normalizePaletteColors(s.colors)
       : s.colors;
-    const eras = Array.isArray(s.eras) && s.eras.length
-      ? uniqueText(s.eras).slice(0, 2)
-      : uniqueText([classifyEra(s, mode)]).slice(0, 2);
-    const regions = Array.isArray(s.regions) && s.regions.length
-      ? uniqueText(s.regions).slice(0, 3)
-      : uniqueText(classifyRegions(s, mode)).slice(0, 3);
-    const aliases = inferAliases(s, mode);
-    const searchTokens = inferSearchTokens({ ...s, tags, characteristics, q }, mode);
-    const moods = inferMoods({ ...s, tags }, mode);
-    const useCases = inferUseCases({ ...s, tags }, mode);
-    const media = inferMedia({ ...s, tags }, mode);
+    const eras = (baked?.eras?.length ? uniqueText(baked.eras).slice(0, 2)
+      : (Array.isArray(s.eras) && s.eras.length
+        ? uniqueText(s.eras).slice(0, 2)
+        : uniqueText([classifyEra(s, mode)]).slice(0, 2)));
+    const regions = (baked?.regions?.length ? uniqueText(baked.regions).slice(0, 3)
+      : (Array.isArray(s.regions) && s.regions.length
+        ? uniqueText(s.regions).slice(0, 3)
+        : uniqueText(classifyRegions(s, mode)).slice(0, 3)));
+    const aliases = (baked?.aliases?.length ? baked.aliases : inferAliases(s, mode));
+    const searchTokens = (baked?.searchTokens?.length ? baked.searchTokens : inferSearchTokens({ ...s, tags, characteristics, q }, mode));
+    const moods = (baked?.moods?.length ? baked.moods : inferMoods({ ...s, tags }, mode));
+    const useCases = (baked?.useCases?.length ? baked.useCases : inferUseCases({ ...s, tags }, mode));
+    const media = (baked?.media?.length ? baked.media : inferMedia({ ...s, tags }, mode));
     const sourceLinks = buildSourceLinks(figures);
     const seriesCode = directorySeriesCode(mode);
     const seriesLabel = directorySeriesLabel(mode);
@@ -7600,7 +7656,9 @@
       eras,
       regions,
       media,
-      sourceLinks
+      sourceLinks,
+      relatedIds: Array.isArray(baked?.relatedIds) ? baked.relatedIds : [],
+      bakedPrompt: String(baked?.promptTemplate || '')
     };
   }
 
@@ -7888,6 +7946,7 @@
   }
 
   function init() {
+    metrics('session_start', { dir: getPreferredDirectory() });
     try {
       applyTheme(getPreferredTheme());
       applyDirectory(getPreferredDirectory());
@@ -8665,7 +8724,8 @@
   }
 
   function openDetail(style) {
-    if (!style || !dom.grid) return;
+    if (!style || !dom.detailPanel) return;
+    metrics('detail_open', { id: style.id, dir: directoryMode });
     selectedStyleId = style.id;
     detailStyleId = style.id;
     activeBindMenuStyleId = '';
@@ -8679,22 +8739,82 @@
     } else if (!siteKeys.includes(detailSiteKey)) {
       detailSiteKey = siteKeys[0] || 'pinterest';
     }
-    if (dom.detailPanel) dom.detailPanel.hidden = false;
+
+    // 2단계: 상세 패널을 카드 클릭의 1차 목적지로 — 콘텐츠를 항상 채운다.
+    const title = style.ko || style.en || style.id;
+    const subtitle = uniqueText([style.cardNo, style.rarity, style.en, style.id])
+      .filter((value) => normalize(value) !== normalize(title))
+      .join(' · ');
+    const summary = buildDetailDefinition(style);
+    const promptBundle = buildPromptBundle(style);
+
+    if (dom.detailType) dom.detailType.textContent = style.seriesLabel || `${directoryShortLabel(style.type)} Series`;
+    if (dom.detailTitle) dom.detailTitle.textContent = title;
+    if (dom.detailSubtitle) {
+      dom.detailSubtitle.textContent = subtitle;
+      dom.detailSubtitle.hidden = !subtitle;
+    }
+    if (dom.detailSummary) dom.detailSummary.textContent = summary;
+    if (dom.detailThumb) {
+      dom.detailThumb.alt = `${style.cardNo || ''} ${style.ko || style.en || style.id}`.trim();
+      applyThumb(dom.detailThumb, style);
+    }
+
+    renderDetailChipRow(dom.detailFacts, buildDetailFacts(style).map(([label, value]) => ({ label, value })));
+    renderDetailList(dom.detailSignals, detailSignalItems(style));
+    renderDetailList(dom.detailUseCases, detailUseCaseItems(style));
+    renderDetailTokens(dom.detailKeywords, detailKeywordItems(style));
+    renderDetailChipRow(dom.detailTags, uniqueText((style.tags || []).map((tag) => `#${tag}`)));
+
+    const paletteColors = Array.isArray(style.colors) ? style.colors.slice(0, 8) : [];
+    if (dom.detailPaletteBlock) dom.detailPaletteBlock.hidden = paletteColors.length === 0;
+    renderDetailChipRow(dom.detailPalette, paletteColors, { palette: true });
+
+    const links = Array.isArray(style.sourceLinks) ? style.sourceLinks : [];
+    if (dom.detailFiguresBlock) dom.detailFiguresBlock.hidden = links.length === 0;
+    renderDetailLinks(dom.detailFigures, links);
+
+    renderDetailSearchWorkbench(style);
+    renderDetailBinderSection(style);
+
+    if (dom.detailGeneratePromptText) dom.detailGeneratePromptText.textContent = promptBundle.generate || '-';
+    if (dom.detailTransformPromptText) dom.detailTransformPromptText.textContent = promptBundle.transform || '-';
+    if (dom.detailExpandPromptText) dom.detailExpandPromptText.textContent = promptBundle.expand || '-';
+    bindDetailCopyAction(dom.detailGeneratePromptCopy, promptBundle.generate, 'Generate prompt copied.');
+    bindDetailCopyAction(dom.detailTransformPromptCopy, promptBundle.transform, 'Transform prompt copied.');
+    bindDetailCopyAction(dom.detailExpandPromptCopy, promptBundle.expand, 'Expand prompt copied.');
+    renderDetailActions(style);
+
+    // 2단계: 죽어 있던 관련 레퍼런스(동일 타입 + 교차 타입)를 상세 패널에 연결.
+    // 1단계에서 구운 relatedIds(data/references-index.js)가 있으면 그것을 우선 사용한다.
+    const relatedItems = relatedStylesFor(style.id, 6);
+    if (dom.detailSameTypeBlock) dom.detailSameTypeBlock.hidden = relatedItems.length === 0;
+    renderRelatedButtons(dom.detailSameType, relatedItems);
+    const crossGroups = crossRelatedReferences(style, 2);
+    if (dom.detailCrossTypeBlock) dom.detailCrossTypeBlock.hidden = crossGroups.length === 0;
+    renderCrossRelated(dom.detailCrossType, crossGroups);
+
+    dom.detailPanel.hidden = false;
     document.body.classList.add('detail-open');
-    dom.grid.querySelectorAll('.style-card.selected').forEach((card) => {
-      if (card.dataset.id !== style.id) {
-        card.classList.remove('selected');
-        card.setAttribute('aria-pressed', 'false');
+
+    if (dom.grid) {
+      dom.grid.querySelectorAll('.style-card.selected').forEach((card) => {
+        if (card.dataset.id !== style.id) {
+          card.classList.remove('selected');
+          card.setAttribute('aria-pressed', 'false');
+        }
+      });
+      const next = dom.grid.querySelector(`.style-card[data-id="${CSS.escape(style.id)}"]`);
+      if (next) {
+        next.classList.add('selected');
+        next.setAttribute('aria-pressed', 'true');
       }
-    });
-    const next = dom.grid.querySelector(`.style-card[data-id="${CSS.escape(style.id)}"]`);
-    if (!next) return;
-    next.classList.add('selected');
-    next.setAttribute('aria-pressed', 'true');
+    }
   }
 
   function selectStyle(style, { openInspector = true } = {}) {
     if (!style) return;
+    metrics('card_select', { id: style.id, dir: directoryMode });
     selectedStyleId = style.id;
 
     if (dom.grid) {
@@ -9772,6 +9892,18 @@
 
     return card;
   }
+
+  // 빌드 타임 데이터 파이프라인 훅 (tools/build-reference-index.mjs 전용).
+  // 브라우저 정상 동작에는 관여하지 않는다.
+  try {
+    window.__INSPODEX_BAKE__ = {
+      enrichStyle,
+      sourceDataForDirectory,
+      DATA_DIRECTORY_MODES,
+      buildPromptBundle,
+      scoreReferenceRelation
+    };
+  } catch { /* ignore */ }
 
   document.addEventListener('DOMContentLoaded', init);
 })();

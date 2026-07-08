@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.5.0 (2026-07-08)
+
+분석 보고서(inspodex 분석 보고서 — 뒤집을 것과 지킬 것) 0~2단계 구현.
+
+### 0단계 — 계측과 피드백
+- `analytics.js` 추가: 로컬 이벤트 계측(`window.InspodexMetrics`) — session_start, card_select, detail_open, board_create, board_save, favorite, export_pack, external_search, feedback.
+- 핵심 지표 요약 API(`InspodexMetrics.summary()`): 보드 생성률·저장·Export·7일 재방문 산출. `exportJson()`으로 다운로드.
+- 워크스페이스 헤더에 "피드백" 진입점 추가(사용 요약 자동 첨부 메일 초안).
+
+### 1단계 — 빌드 타임 데이터 파이프라인 (런타임 파생 → 정적 데이터 반전)
+- `tools/build-reference-index.mjs` 추가(`npm run bake`): script.js의 enrichStyle을 단일 소스로 재사용해 1,260개 레퍼런스를 공통 ReferenceItem 스키마로 굽는다.
+- 산출물 `data/references.json`(사람이 검수·수정하는 카탈로그, promptTemplate 포함) + `data/references-index.js`(런타임 오버레이).
+- `enrichStyle`이 구운 데이터를 런타임 추론보다 우선 사용. `buildPromptBundle`도 검수된 promptTemplate 우선.
+- 동일 타입 6개 + 교차 타입별 2개 `relatedIds` 사전 계산(자카드 유사도).
+- script.js에 `__INSPODEX_BAKE__` 훅 노출(파이프라인 전용, 브라우저 동작에 무영향).
+
+### 2단계 — 상세 패널 우선 전환
+- 중복 선언으로 죽어 있던 완전판 `openDetail`을 복원: 카드 클릭 시 상세 콘텐츠(요약·특징·활용·키워드·팔레트·출처·프롬프트)가 항상 채워진다.
+- 정의만 되고 호출되지 않던 `relatedStylesFor`/`crossRelatedReferences`를 상세 패널에 연결 — "비슷한 레퍼런스"와 "다른 타입의 연관 레퍼런스" 섹션이 처음으로 동작.
+- 관련 항목은 1단계에서 구운 relatedIds를 우선 사용.
+
+### 보류
+- AI 썸네일 생성: Codex 내장 gpt-image-2 연동으로 진행 예정(별도 작업).
+
 ## 0.3.21 (2025-12-16)
 - Pose 디렉토리: 검색은 Pinterest/Google 이미지로만 동작.
 - Posemaniacs: 검색 연동 제거, 참고용 링크 버튼으로만 제공.

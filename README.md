@@ -66,6 +66,29 @@ Then open `http://localhost:8080`.
 - Local persistence relies on `localStorage`
 - Missing thumbnails fall back to generated SVG assets when needed
 
+## Data pipeline (v0.5.0)
+
+Reference metadata is now baked at build time instead of derived at runtime:
+
+```bash
+npm run bake   # tools/build-reference-index.mjs
+```
+
+- `data/references.json`: full ReferenceItem catalog. Edit this (or the upstream `*-data.js`) and re-run bake. Prompt templates here are meant to be human-reviewed.
+- `data/references-index.js`: runtime overlay loaded before `script.js`. When present, `enrichStyle()` prefers baked fields (aliases, moods, useCases, eras, regions, media, overview, relatedIds, promptTemplate) over runtime heuristics.
+- Related references (same-type + cross-type) are precomputed into `relatedIds` and power the detail panel sections.
+
+## Metrics (v0.5.0)
+
+`analytics.js` records local, privacy-friendly usage events (no server). In DevTools:
+
+```js
+InspodexMetrics.summary()     // 보드 생성/저장/Export/외부검색/재방문 요약
+InspodexMetrics.exportJson()  // JSON 다운로드
+```
+
+Set `window.INSPODEX_METRICS_ENDPOINT` to forward events via `sendBeacon` when a backend exists.
+
 ## Deployment
 
 If you deploy under a different domain, update:
