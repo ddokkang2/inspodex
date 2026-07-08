@@ -78,6 +78,21 @@ npm run bake   # tools/build-reference-index.mjs
 - `data/references-index.js`: runtime overlay loaded before `script.js`. When present, `enrichStyle()` prefers baked fields (aliases, moods, useCases, eras, regions, media, overview, relatedIds, promptTemplate) over runtime heuristics.
 - Related references (same-type + cross-type) are precomputed into `relatedIds` and power the detail panel sections.
 
+## Thumbnail workflow (v0.6.0)
+
+The repo now has the support files for the sequential thumbnail pass described in `TalkFile_CODEX_THUMBS_TASK.md`.
+
+```bash
+npm run thumb:prompts   # writes data/thumb-prompts.json
+npm run thumb:manifest  # rewrites thumb-manifest.js from the prompt list
+```
+
+- The intended order is `pose -> palette -> artist -> photo -> design -> character`.
+- `data/thumb-failures.json` is reserved for ids that fail generation after retry.
+- `tools/build-thumb-prompts.mjs` reads the baked reference catalog and prepares `{ id, type, title, file, exists, prompt }` records.
+- `tools/update-thumb-manifest.mjs` keeps `thumb-manifest.js` aligned with the generated thumb list.
+- `npm run thumb:workflow` runs the prompt build and manifest refresh in sequence.
+
 ## Metrics (v0.5.0)
 
 `analytics.js` records local, privacy-friendly usage events (no server). In DevTools:
