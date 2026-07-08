@@ -546,6 +546,11 @@ window.THUMB_MANIFEST = {
     "warm-tone": "jpg",
     "wedding": "jpg",
     "wildlife": "jpg",
-    "window-light": "jpg"
+    "window-light": "jpg",
+    "editorial-beauty": "png",
+    "top-light-portrait": "png",
+    "still-life": "png",
+    "hard-flash-editorial": "png",
+    "night-street": "png"
   }
 };
