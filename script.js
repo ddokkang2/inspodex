@@ -9862,6 +9862,63 @@
     binderBox.appendChild(binderActions);
     backBody.appendChild(binderBox);
 
+    // 관련 레퍼런스 (분석 보고서 2단계): 1단계에서 구운 relatedIds 기반.
+    // 같은 타입 + 다른 타입의 어울리는 레퍼런스를 카드 뒷면에서 바로 잇는다.
+    try {
+      const sameItems = relatedStylesFor(style.id, 6);
+      const crossGroups = crossRelatedReferences(style, 2);
+      if (sameItems.length || crossGroups.length) {
+        const relatedBox = document.createElement('article');
+        relatedBox.className = 'style-card-query-card';
+
+        const relatedHead = document.createElement('div');
+        relatedHead.className = 'style-card-query-head';
+        const relatedTitle = document.createElement('div');
+        relatedTitle.className = 'style-card-query-label';
+        relatedTitle.textContent = '관련 레퍼런스';
+        relatedTitle.appendChild(createHelpIcon('이 카드와 결이 비슷한 레퍼런스입니다. 다른 타입(팔레트·포즈 등)과 조합해 방향 세트를 만들 때 활용하세요.'));
+        relatedHead.appendChild(relatedTitle);
+        relatedBox.appendChild(relatedHead);
+
+        const addRelatedRow = (labelText, items) => {
+          if (!items.length) return;
+          const group = document.createElement('div');
+          group.className = 'style-card-query-group';
+          const label = document.createElement('div');
+          label.className = 'style-card-query-label';
+          label.style.opacity = '0.7';
+          label.style.fontSize = '0.72rem';
+          label.textContent = labelText;
+          group.appendChild(label);
+          const row = document.createElement('div');
+          row.className = 'style-card-site-shortcuts';
+          items.forEach((item) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'style-tag style-card-site-chip';
+            chip.textContent = item.ko || item.en || item.id;
+            chip.title = item.en || '';
+            chip.addEventListener('pointerdown', (event) => event.stopPropagation());
+            chip.addEventListener('click', (event) => {
+              stopBubble(event);
+              metrics('related_open', { from: style.id, to: item.id, cross: item.type !== style.type });
+              openReference(item);
+            });
+            row.appendChild(chip);
+          });
+          group.appendChild(row);
+          relatedBox.appendChild(group);
+        };
+
+        addRelatedRow('비슷한 타입', sameItems.slice(0, 5));
+        crossGroups.forEach((group) => addRelatedRow(directoryLabel(group.type), group.items));
+
+        backBody.appendChild(relatedBox);
+      }
+    } catch (err) {
+      console.error('related references render failed', err);
+    }
+
     back.appendChild(backBody);
 
     shell.appendChild(front);
